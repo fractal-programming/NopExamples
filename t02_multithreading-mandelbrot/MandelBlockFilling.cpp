@@ -122,7 +122,7 @@ Success MandelBlockFilling::lineFill()
 	numRemaining = mNumBlock - mIdxBlock;
 	numBurst = PMIN(numRemaining, mpCfg->numBurst);
 
-	char *pDataEnd = mpLine + mpCfg->szLine;
+	const char *pDataEnd = mpLine + mpCfg->szLine;
 
 	while (numRemaining = mNumPixel - mIdxPixel, numRemaining && numBurst)
 	{
@@ -148,17 +148,13 @@ Success MandelBlockFilling::lineFill()
 
 void MandelBlockFilling::colorMandelbrotChunks(char *pData, size_t idxLine, size_t idxPixel, size_t numPixel)
 {
-	//char buf1[2 * cNumDoublesPerBlock * cNumBytesPerPixel];
-	//char buf2[2 * cNumDoublesPerBlock * cNumBytesPerPixel];
 #if APP_HAS_AVX2
-	//pData = buf1;
 	if (numPixel == mNumElemPerBlock && !mpCfg->disableSimd)
 	{
 		mNumIter += colorMandelbrotSimd(mpCfg, pData, idxLine, idxPixel);
 		return;
 	}
 #endif
-	//pData = buf2;
 	for (size_t i = 0; i < numPixel; ++i)
 	{
 		mNumIter += colorMandelbrotScalar(mpCfg, pData, idxLine, idxPixel);
@@ -166,14 +162,6 @@ void MandelBlockFilling::colorMandelbrotChunks(char *pData, size_t idxLine, size
 		pData += cNumBytesPerPixel;
 		++idxPixel;
 	}
-#if 0
-	if (memcmp(buf1, buf2, sizeof(buf1)))
-	{
-		hexDump(buf1, sizeof(buf1), "buf1");
-		hexDump(buf2, sizeof(buf2), "buf2");
-		exit(1);
-	}
-#endif
 }
 
 void MandelBlockFilling::processInfo(char *pBuf, char *pBufEnd)
@@ -184,6 +172,7 @@ void MandelBlockFilling::processInfo(char *pBuf, char *pBufEnd)
 	dInfo("%03u: ", mIdxLine);
 	pBuf += progressStr(pBuf, pBufEnd, (int)mIdxPixel, (int)mNumPixel);
 	dInfo("\n");
+	(void)pBuf;
 }
 
 /* static functions */

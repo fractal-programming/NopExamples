@@ -103,19 +103,14 @@ static __m256d cOne, cTwo, cFour;
 static __m256 cOneF, cTwoF, cFourF;
 #endif
 
-static MbVal fractionalIter(
-			MbVal zx, MbVal zy,
-			size_t numIter)
-{
-	MbVal mag = sqrtf(zx * zx + zy * zy);
-	return numIter + 1 - log2f(log2f(mag));
-}
+#define THIS_DEBUG 0
 
-static MbValFull fractionalIter(
-			MbValFull zx, MbValFull zy,
+template<typename T>
+static T fractionalIter(
+			T zx, T zy,
 			size_t numIter)
 {
-	MbValFull mag = sqrt(zx * zx + zy * zy);
+	T mag = sqrt(zx * zx + zy * zy);
 	return numIter + 1 - log2(log2(mag));
 }
 
@@ -155,21 +150,28 @@ static void mandelbrot(
 
 // (x, y) -> (r, g, b)
 template<typename T>
-static void colorMandelbrotScalar(ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel, size_t &numIter)
+static void colorMandelbrotScalar(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel, size_t &numIter)
 {
 	// 1. From image pixel space -> Complex space
 
-	T idxX = idxPixel - pCfg->w2;
-	T idxY = idxLine - pCfg->h2;
-	T cx = pCfg->scaleX * idxX + pCfg->posX;
-	T cy = pCfg->scaleY * idxY + pCfg->posY;
+	T sxf = pCfg->scaleX;
+	T syf = pCfg->scaleY;
+	T pxf = pCfg->posX;
+	T pyf = pCfg->posY;
+	T w2f = pCfg->w2;
+	T h2f = pCfg->h2;
+
+	T idxX = idxPixel - w2f;
+	T idxY = idxLine - h2f;
+	T cx = sxf * idxX + pxf;
+	T cy = syf * idxY + pyf;
 
 	// 2. Do the mandelbrot calculation in complex space
 
 	size_t numIterMax = pCfg->numIterMax;
 	T zx, zy;
 
-	mandelbrot(cx, cy, numIterMax, zx, zy, numIter);
+	mandelbrot<T>(cx, cy, numIterMax, zx, zy, numIter);
 
 	// 3. Color mapping from fractional iterator -> RGB color
 
@@ -187,9 +189,9 @@ static void colorMandelbrotScalar(ConfigMandelbrot *pCfg, char *pData, size_t id
 	size_t idxGrad1;
 	Color c;
 
-	mu = fractionalIter(zx, zy, numIter);
+	mu = fractionalIter<T>(zx, zy, numIter);
 
-	t = mu * 0.02;
+	t = mu * (T)0.02;
 	t = t - floor(t);
 
 	tMin = 0.0;
@@ -204,10 +206,10 @@ static void colorMandelbrotScalar(ConfigMandelbrot *pCfg, char *pData, size_t id
 	pGrad2 = pGrad1 + 1;
 
 	c = lerp(t, pGrad1->c, pGrad2->c);
-#if 0
+#if THIS_DEBUG
 	dbgLog("-----------------------------------");
-	dbgLog("idxX            %12.0f (%zu)", idxPixel);
-	dbgLog("idxY            %12.0f (%zu)", idxLine);
+	dbgLog("idxX            %12zu", idxPixel);
+	dbgLog("idxY            %12zu", idxLine);
 	dbgLog("cx              %12.8f", cx);
 	dbgLog("cy              %12.8f", cy);
 	dbgLog("zx              %12.8f", zx);
@@ -227,7 +229,7 @@ static void colorMandelbrotScalar(ConfigMandelbrot *pCfg, char *pData, size_t id
 #endif
 }
 
-size_t colorMandelbrotScalar(ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel)
+size_t colorMandelbrotScalar(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel)
 {
 	size_t numIter;
 
@@ -245,7 +247,7 @@ size_t colorMandelbrotScalar(ConfigMandelbrot *pCfg, char *pData, size_t idxLine
  * - https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html
  */
 #if APP_HAS_AVX2
-#if 0
+#if THIS_DEBUG
 static void m128iPrint(__m128i &val, const char *pName = NULL)
 {
 	int32_t valOut[cNumDoublesPerBlock];
@@ -256,10 +258,9 @@ static void m128iPrint(__m128i &val, const char *pName = NULL)
 		pName ? pName : "m128i",
 		valOut[0], valOut[1], valOut[2], valOut[3]);
 
-	hexDump(&valOut, sizeof(valOut));
+	//hexDump(&valOut, sizeof(valOut));
 }
-#endif
-#if 0
+
 static void m256iPrint(__m256i &val, const char *pName = NULL)
 {
 	int32_t valOut[2 * cNumDoublesPerBlock];
@@ -271,24 +272,9 @@ static void m256iPrint(__m256i &val, const char *pName = NULL)
 		valOut[0], valOut[1], valOut[2], valOut[3],
 		valOut[4], valOut[5], valOut[6], valOut[7]);
 
-	hexDump(&valOut, sizeof(valOut));
+	//hexDump(&valOut, sizeof(valOut));
 }
-#endif
-#if 0
-static void m256dPrint(__m256d &val, const char *pName = NULL)
-{
-	MbValFull valOut[cNumDoublesPerBlock];
 
-	_mm256_storeu_pd(valOut, val);
-
-	dbgLog("%s = [%.8f, %.8f, %.8f, %.8f]",
-		pName ? pName : "m256d",
-		valOut[0], valOut[1], valOut[2], valOut[3]);
-
-	hexDump(&valOut, sizeof(valOut));
-}
-#endif
-#if 0
 static void m256Print(__m256 &val, const char *pName = NULL)
 {
 	MbVal valOut[2 * cNumDoublesPerBlock];
@@ -300,7 +286,20 @@ static void m256Print(__m256 &val, const char *pName = NULL)
 		valOut[0], valOut[1], valOut[2], valOut[3],
 		valOut[4], valOut[5], valOut[6], valOut[7]);
 
-	hexDump(&valOut, sizeof(valOut));
+	//hexDump(&valOut, sizeof(valOut));
+}
+
+static void m256dPrint(__m256d &val, const char *pName = NULL)
+{
+	MbValFull valOut[cNumDoublesPerBlock];
+
+	_mm256_storeu_pd(valOut, val);
+
+	dbgLog("%s = [%.8f, %.8f, %.8f, %.8f]",
+		pName ? pName : "m256d",
+		valOut[0], valOut[1], valOut[2], valOut[3]);
+
+	//hexDump(&valOut, sizeof(valOut));
 }
 #endif
 __m128i lerp(MbValFull t_d, __m256d a, __m256d b)
@@ -389,6 +388,7 @@ static void mandelbrot(
 
 		xy = _mm256_mul_ps(zx, zy);
 
+		// shoutout for nite_child
 		tmp_f = _mm256_add_ps(_mm256_sub_ps(xx, yy), cx);
 		zx = _mm256_blendv_ps(zx, tmp_f, mask);
 
@@ -445,7 +445,120 @@ static void mandelbrot(
 	numIterOut = numIter;
 }
 
-void colorMandelbrotSimdDouble(ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel, size_t &numIterSum)
+void colorMandelbrotSimdFloat(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel, size_t &numIterSum)
+{
+	// 1. From image pixel space -> Complex space
+
+	__m256i tmp_i, idxXin, idxYin;
+	__m256 tmp_f, idxX, idxY, cx, cy;
+	MbVal sxf = pCfg->scaleX;
+	MbVal syf = pCfg->scaleY;
+	MbVal pxf = pCfg->posX;
+	MbVal pyf = pCfg->posY;
+	MbVal w2f = pCfg->w2;
+	MbVal h2f = pCfg->h2;
+
+	idxXin = _mm256_set_epi32(
+			idxPixel + 7, idxPixel + 6, idxPixel + 5, idxPixel + 4,
+			idxPixel + 3, idxPixel + 2, idxPixel + 1, idxPixel + 0);
+	idxYin = _mm256_set1_epi32(idxLine);
+
+	idxX = _mm256_sub_ps(_mm256_cvtepi32_ps(idxXin), _mm256_set1_ps(w2f));
+	idxY = _mm256_sub_ps(_mm256_cvtepi32_ps(idxYin), _mm256_set1_ps(h2f));
+
+	cx = _mm256_mul_ps(_mm256_set1_ps(sxf), idxX);
+	cx = _mm256_add_ps(cx, _mm256_set1_ps(pxf));
+
+	cy = _mm256_mul_ps(_mm256_set1_ps(syf), idxY);
+	cy = _mm256_add_ps(cy, _mm256_set1_ps(pyf));
+
+	// 2. Do the mandelbrot calculation in complex space
+
+	size_t numIterMax = pCfg->numIterMax;
+	MbVal numIter_f[2 * cNumDoublesPerBlock];
+	__m256 zx, zy, numIter;
+
+	mandelbrot(cx, cy, numIterMax, zx, zy, numIter);
+
+	_mm256_storeu_ps(numIter_f, numIter);
+
+	numIterSum = 0;
+	for (size_t i = 0; i < 2 * cNumDoublesPerBlock; ++i)
+		numIterSum += (size_t)numIter_f[i];
+
+	// 3. Color mapping from fractional iterator -> RGB color
+
+	uint32_t idxGrad1_u[2 * cNumDoublesPerBlock];
+	MbVal t_f[2 * cNumDoublesPerBlock];
+	GradientStop *pGrad1, *pGrad2;
+	__m256 mu, t, tMin, tMax;
+	__m256i idxGrad1;
+	__m128i c;
+	__m256d c1, c2;
+
+	mu = fractionalIter(zx, zy, numIter);
+
+	t = _mm256_mul_ps(_mm256_set1_ps(0.02f), mu);
+	t = _mm256_sub_ps(t, _mm256_floor_ps(t));
+
+	tMin = _mm256_set1_ps(0.0f);
+	tMax = _mm256_set1_ps(1.0f);
+
+	t = _mm256_min_ps(t, tMax);
+	t = _mm256_max_ps(t, tMin);
+
+	tmp_i = _mm256_set1_epi32(cNumGradients - 1);
+	tmp_f = _mm256_cvtepi32_ps(tmp_i);
+	tmp_f = _mm256_mul_ps(t, tmp_f);
+	idxGrad1 = _mm256_cvttps_epi32(tmp_f);
+
+	tmp_i = _mm256_set1_epi32(cNumGradients - 2);
+	idxGrad1 = _mm256_min_epi32(idxGrad1, tmp_i);
+
+	_mm256_storeu_ps(t_f, t);
+	_mm256_storeu_si256((__m256i *)idxGrad1_u, idxGrad1);
+#if THIS_DEBUG
+	m256iPrint(idxXin, "idxXin");
+	m256iPrint(idxYin, "idxYin");
+	m256Print(cx, "cx");
+	m256Print(cy, "cy");
+	m256Print(zx, "zx");
+	m256Print(zy, "zy");
+	m256Print(numIter, "numIter");
+	dbgLog("numIterSum = %zu", numIterSum);
+	m256Print(mu, "mu");
+	m256Print(t, "t");
+	m256iPrint(idxGrad1, "idxGrad1");
+#endif
+	for (size_t i = 0; i < 2 * cNumDoublesPerBlock; ++i)
+	{
+		pGrad1 = &gradient[idxGrad1_u[i]];
+		pGrad2 = pGrad1 + 1;
+
+		c1 = _mm256_set_pd(0, pGrad1->c.b(), pGrad1->c.g(), pGrad1->c.r());
+		c2 = _mm256_set_pd(0, pGrad2->c.b(), pGrad2->c.g(), pGrad2->c.r());
+
+		c = lerp((MbValFull)t_f[i], c1, c2);
+
+		if ((size_t)numIter_f[i] >= numIterMax)
+			c = _mm_set1_epi32(0);
+#if THIS_DEBUG
+		dbgLog("R/G/B            %3u/%3u/%3u",
+				_mm_extract_epi8(c, 0),
+				_mm_extract_epi8(c, 4),
+				_mm_extract_epi8(c, 8));
+#endif
+		// Not RGB but BGR! => BMP specific
+		*pData++ = _mm_extract_epi8(c, 8);
+		*pData++ = _mm_extract_epi8(c, 4);
+		*pData++ = _mm_extract_epi8(c, 0);
+	}
+#if 0
+	hexDump(pData - 24, 24, "COLOR SIMD");
+#endif
+}
+
+void colorMandelbrotSimdDouble(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel, size_t &numIterSum)
 {
 	// 1. From image pixel space -> Complex space
 
@@ -508,7 +621,7 @@ void colorMandelbrotSimdDouble(ConfigMandelbrot *pCfg, char *pData, size_t idxLi
 
 	_mm256_storeu_pd(t_d, t);
 	_mm_storeu_si128((__m128i *)idxGrad1_u, idxGrad1);
-#if 0
+#if THIS_DEBUG
 	m128iPrint(idxXin, "idxXin");
 	m128iPrint(idxYin, "idxYin");
 	m256dPrint(cx, "cx");
@@ -533,7 +646,7 @@ void colorMandelbrotSimdDouble(ConfigMandelbrot *pCfg, char *pData, size_t idxLi
 
 		if ((size_t)numIter_d[i] >= numIterMax)
 			c = _mm_set1_epi32(0);
-#if 0
+#if THIS_DEBUG
 		dbgLog("R/G/B            %3u/%3u/%3u",
 				_mm_extract_epi8(c, 0),
 				_mm_extract_epi8(c, 4),
@@ -549,114 +662,7 @@ void colorMandelbrotSimdDouble(ConfigMandelbrot *pCfg, char *pData, size_t idxLi
 #endif
 }
 
-void colorMandelbrotSimdFloat(ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel, size_t &numIterSum)
-{
-	// 1. From image pixel space -> Complex space
-
-	__m256i tmp_i, idxXin, idxYin;
-	__m256 tmp_f, idxX, idxY, cx, cy;
-
-	idxXin = _mm256_set_epi32(
-			idxPixel + 7, idxPixel + 6, idxPixel + 5, idxPixel + 4,
-			idxPixel + 3, idxPixel + 2, idxPixel + 1, idxPixel + 0);
-	idxYin = _mm256_set1_epi32(idxLine);
-
-	idxX = _mm256_sub_ps(_mm256_cvtepi32_ps(idxXin), _mm256_set1_ps((MbVal)pCfg->w2));
-	idxY = _mm256_sub_ps(_mm256_cvtepi32_ps(idxYin), _mm256_set1_ps((MbVal)pCfg->h2));
-
-	cx = _mm256_mul_ps(_mm256_set1_ps((MbVal)pCfg->scaleX), idxX);
-	cx = _mm256_add_ps(cx, _mm256_set1_ps((MbVal)pCfg->posX));
-
-	cy = _mm256_mul_ps(_mm256_set1_ps((MbVal)pCfg->scaleY), idxY);
-	cy = _mm256_add_ps(cy, _mm256_set1_ps((MbVal)pCfg->posY));
-
-	// 2. Do the mandelbrot calculation in complex space
-
-	size_t numIterMax = pCfg->numIterMax;
-	MbVal numIter_f[2 * cNumDoublesPerBlock];
-	__m256 zx, zy, numIter;
-
-	mandelbrot(cx, cy, numIterMax, zx, zy, numIter);
-
-	_mm256_storeu_ps(numIter_f, numIter);
-
-	numIterSum = 0;
-	for (size_t i = 0; i < 2 * cNumDoublesPerBlock; ++i)
-		numIterSum += (size_t)numIter_f[i];
-
-	// 3. Color mapping from fractional iterator -> RGB color
-
-	uint32_t idxGrad1_u[2 * cNumDoublesPerBlock];
-	MbVal t_f[2 * cNumDoublesPerBlock];
-	GradientStop *pGrad1, *pGrad2;
-	__m256 mu, t, tMin, tMax;
-	__m256i idxGrad1;
-	__m128i c;
-	__m256d c1, c2;
-
-	mu = fractionalIter(zx, zy, numIter);
-
-	t = _mm256_mul_ps(_mm256_set1_ps(0.02f), mu);
-	t = _mm256_sub_ps(t, _mm256_floor_ps(t));
-
-	tMin = _mm256_set1_ps(0.0f);
-	tMax = _mm256_set1_ps(1.0f);
-
-	t = _mm256_min_ps(t, tMax);
-	t = _mm256_max_ps(t, tMin);
-
-	tmp_i = _mm256_set1_epi32(cNumGradients - 1);
-	tmp_f = _mm256_cvtepi32_ps(tmp_i);
-	tmp_f = _mm256_mul_ps(t, tmp_f);
-	idxGrad1 = _mm256_cvttps_epi32(tmp_f);
-
-	tmp_i = _mm256_set1_epi32(cNumGradients - 2);
-	idxGrad1 = _mm256_min_epi32(idxGrad1, tmp_i);
-
-	_mm256_storeu_ps(t_f, t);
-	_mm256_storeu_si256((__m256i *)idxGrad1_u, idxGrad1);
-#if 0
-	m256iPrint(idxXin, "idxXin");
-	m256iPrint(idxYin, "idxYin");
-	m256Print(cx, "cx");
-	m256Print(cy, "cy");
-	m256Print(zx, "zx");
-	m256Print(zy, "zy");
-	m256Print(numIter, "numIter");
-	dbgLog("numIterSum = %zu", numIterSum);
-	m256Print(mu, "mu");
-	m256Print(t, "t");
-	m256iPrint(idxGrad1, "idxGrad1");
-#endif
-	for (size_t i = 0; i < 2 * cNumDoublesPerBlock; ++i)
-	{
-		pGrad1 = &gradient[idxGrad1_u[i]];
-		pGrad2 = pGrad1 + 1;
-
-		c1 = _mm256_set_pd(0, pGrad1->c.b(), pGrad1->c.g(), pGrad1->c.r());
-		c2 = _mm256_set_pd(0, pGrad2->c.b(), pGrad2->c.g(), pGrad2->c.r());
-
-		c = lerp((MbValFull)t_f[i], c1, c2);
-
-		if ((size_t)numIter_f[i] >= numIterMax)
-			c = _mm_set1_epi32(0);
-#if 0
-		dbgLog("R/G/B            %3u/%3u/%3u",
-				_mm_extract_epi8(c, 0),
-				_mm_extract_epi8(c, 4),
-				_mm_extract_epi8(c, 8));
-#endif
-		// Not RGB but BGR! => BMP specific
-		*pData++ = _mm_extract_epi8(c, 8);
-		*pData++ = _mm_extract_epi8(c, 4);
-		*pData++ = _mm_extract_epi8(c, 0);
-	}
-#if 0
-	hexDump(pData - 24, 24, "COLOR SIMD");
-#endif
-}
-
-size_t colorMandelbrotSimd(ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel)
+size_t colorMandelbrotSimd(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel)
 {
 	size_t numIter;
 

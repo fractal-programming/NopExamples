@@ -109,8 +109,9 @@ if host_machine.system() == 'windows'
 else
 	args += '-std=gnu++11'
 	args += '-O3'
+	#args += '-ffast-math'
 	args += '-march=native'
-	args += '-ffast-math'
+	args += '-ffp-contract=off'
 endif
 
 if cxx.get_id() == 'msvc'
