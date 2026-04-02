@@ -27,7 +27,7 @@
 #include "ThreadPooling.h"
 #include "LibTime.h"
 #if APP_HAS_VULKAN
-#include "LibVulkan.h"
+#include "DeviceVulkan.h"
 #endif
 
 #define dForEach_ProcState(gen) \
@@ -177,6 +177,14 @@ Success MandelbrotCreating::process()
 				return procErrLog(-1, "could not create Vulkan instance");
 
 			devicesVulkanList(inst);
+
+			DeviceVulkan dev;
+
+			(void)DeviceVulkan::selectAndRegister(inst, "main", NULL,
+								VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
+
+			dev = DeviceVulkan::get("main");
+			procDbgLog("Selected device: %s", dev.name().c_str());
 		}
 #endif
 		return Positive;
