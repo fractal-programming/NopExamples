@@ -161,8 +161,12 @@ if fs.is_dir('../../LibDspc')
 	args += '-DAPP_HAS_LIB_DSPC=1'
 
 	dep_vulkan = dependency('vulkan', required : false)
-	if dep_vulkan.found()
+	dep_glslang = dependency('glslang', required : false)
+
+	if dep_vulkan.found() and dep_glslang.found()
 		deps += dep_vulkan
+		deps += dep_glslang
+
 		args += '-DAPP_HAS_VULKAN=1'
 
 		srcs += '../../LibDspc/vulkan/LibVulkan.cpp'
