@@ -171,7 +171,6 @@ if fs.is_dir('../../LibDspc')
 
 		srcs += '../../LibDspc/vulkan/LibVulkan.cpp'
 		srcs += '../../LibDspc/vulkan/DeviceVulkan.cpp'
-		srcs += '../../LibDspc/vulkan/PipelineVulkan.cpp'
 		srcs += '../../LibDspc/vulkan/VulkanComputing.cpp'
 
 		incs += '../../LibDspc/vulkan'
