@@ -229,6 +229,8 @@ Success MandelbrotCreating::vulkanStart()
 	if (!mpCompute)
 		return procErrLog(-1, "could not create process");
 
+	mpCompute->shaderAdd(shader);
+
 	start(mpCompute);
 
 	return Positive;
