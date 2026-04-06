@@ -11,7 +11,7 @@ layout(std430, binding = 0) buffer buf
 	uint buff[];
 };
 
-void process()
+void main()
 {
 	uint idx = gl_GlobalInvocationID.x;
 
