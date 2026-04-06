@@ -162,10 +162,20 @@ if fs.is_dir('../../LibDspc')
 
 	dep_vulkan = dependency('vulkan', required : false)
 	dep_glslang = dependency('glslang', required : false)
+	dep_spirv = cxx.find_library('SPIRV', required : false)
+	dep_spirv_tools = cxx.find_library('SPIRV-Tools', required : false)
+	dep_spirv_tools_opt = cxx.find_library('SPIRV-Tools-opt', required : false)
 
-	if dep_vulkan.found() and dep_glslang.found()
+	if dep_vulkan.found() \
+			and dep_glslang.found() \
+			and dep_spirv.found() \
+			and dep_spirv_tools.found() \
+			and dep_spirv_tools_opt.found()
 		deps += dep_vulkan
 		deps += dep_glslang
+		deps += dep_spirv
+		deps += dep_spirv_tools
+		deps += dep_spirv_tools_opt
 
 		args += '-DAPP_HAS_VULKAN=1'
 
