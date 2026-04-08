@@ -237,29 +237,12 @@ Success MandelbrotCreating::vulkanStart()
 	if (!mpCompute)
 		return procErrLog(-1, "could not create process");
 
-	mpCompute->shaderAdd(shader);
+	mpCompute->fileShaderAdd("../mandelbrot.comp");
 	mpCompute->infoDebugShaders = true;
 
 	start(mpCompute);
 
 	return Positive;
-}
-
-bool MandelbrotCreating::shaderRead(const string &filename, string &str)
-{
-	ifstream file(filename, ios::binary);
-	if (!file)
-	{
-		procErrLog(-1, "could not open shader file: %s", filename.c_str());
-		return false;
-	}
-
-	stringstream ss;
-
-	ss << file.rdbuf();
-	str = ss.str();
-
-	return true;
 }
 #endif
 
