@@ -233,9 +233,22 @@ Success MandelbrotCreating::vulkanStart()
 	if (!mpCompute)
 		return procErrLog(-1, "could not create process");
 
+	ok = mpCompute->bufferInAdd(0, &cfg, sizeof(cfg));
+	if (!ok)
+		return procErrLog(-1, "could not add configuration buffer");
+
+	GradientStop *pStartGrad;
+	size_t numElemGrad;
+
+	gradientsGet(pStartGrad, numElemGrad);
+
+	ok = mpCompute->bufferInAdd(1, pStartGrad, numElemGrad * sizeof(GradientStop));
+	if (!ok)
+		return procErrLog(-1, "could not add gradient buffer");
+
 	ok = mpCompute->fileShaderAdd("../mandelbrot.comp");
 	if (!ok)
-		return procErrLog(-1, "could not add shader file");
+		return procErrLog(-1, "could not add Mandelbrot compute shader");
 
 	mpCompute->infoDebugShaders = true;
 
