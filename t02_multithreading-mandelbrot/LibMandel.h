@@ -37,6 +37,39 @@ const size_t cShiftElem = 2;
 const size_t cNumDoublesPerBlock = 1 << cShiftElem;
 const size_t cMaskElem = cNumDoublesPerBlock - 1;
 
+typedef int8_t ElemColor;
+
+class Color
+{
+public:
+	Color(uint8_t r_ = 0, uint8_t g_ = 0, uint8_t b_ = 0)
+		: mR((ElemColor)r_)
+		, mG((ElemColor)g_)
+		, mB((ElemColor)b_)
+	{}
+
+	uint8_t r() { return mR; }
+	uint8_t g() { return mG; }
+	uint8_t b() { return mB; }
+
+	Color operator+(const Color &other) const
+	{ return Color(mR + other.mR, mG + other.mG, mB + other.mB); }
+	Color operator-(const Color &other) const
+	{ return Color(mR - other.mR, mG - other.mG, mB - other.mB); }
+	Color operator*(MbValFull t) const
+	{ return Color(mR * t, mG * t, mB * t); }
+
+	ElemColor mR;
+	ElemColor mG;
+	ElemColor mB;
+};
+
+struct GradientStop
+{
+	MbValFull t;
+	Color c;
+};
+
 struct ConfigMandelbrot
 {
 	// Image
@@ -76,6 +109,7 @@ size_t colorMandelbrotScalar(const ConfigMandelbrot *pCfg, char *pData, size_t i
 #if APP_HAS_AVX2
 size_t colorMandelbrotSimd(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel);
 #endif
+void gradientsGet(GradientStop * &pStart, size_t &numElements);
 
 #endif
 

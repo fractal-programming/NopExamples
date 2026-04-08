@@ -33,39 +33,6 @@
 
 using namespace std;
 
-typedef int8_t ElemColor;
-
-class Color
-{
-public:
-	Color(uint8_t r_ = 0, uint8_t g_ = 0, uint8_t b_ = 0)
-		: mR((ElemColor)r_)
-		, mG((ElemColor)g_)
-		, mB((ElemColor)b_)
-	{}
-
-	uint8_t r() { return mR; }
-	uint8_t g() { return mG; }
-	uint8_t b() { return mB; }
-
-	Color operator+(const Color &other) const
-	{ return Color(mR + other.mR, mG + other.mG, mB + other.mB); }
-	Color operator-(const Color &other) const
-	{ return Color(mR - other.mR, mG - other.mG, mB - other.mB); }
-	Color operator*(MbValFull t) const
-	{ return Color(mR * t, mG * t, mB * t); }
-
-	ElemColor mR;
-	ElemColor mG;
-	ElemColor mB;
-};
-
-struct GradientStop
-{
-	MbValFull t;
-	Color c;
-};
-
 static GradientStop keysGradient[] =
 {
 	{0.00,  {  0,   0,   0}}, // black
@@ -718,5 +685,11 @@ void libMandelInit()
 	}
 
 	gradient[cNumGradients - 1] = keysGradient[cNumKeysGradient - 1];
+}
+
+void gradientsGet(GradientStop * &pStart, size_t &numElements)
+{
+	pStart = gradient;
+	numElements = cNumGradients;
 }
 
