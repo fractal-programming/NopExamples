@@ -63,6 +63,7 @@ class AppHelpOutput : public TclapOutput {};
 #endif
 
 #define cNameFileDefault			"mandelbrot_1"
+#define cFileShaderDefault		"../mandelbrot.comp"
 #define cDirOutputDefault		"."
 #define cImgWidthDefault			"1920"
 #define cImgHeightDefault		"1200"
@@ -160,9 +161,9 @@ int main(int argc, char *argv[])
 #endif
 
 	// Application
-	ValueArg<string> argNameFile("", "name-file", "Name of the outputfile without extension. Default: " cNameFileDefault,
+	ValueArg<string> argFileOut("", "file-out", "Name of the output file without extension. Default: " cNameFileDefault,
 								false, cNameFileDefault, "string");
-	cmd.add(argNameFile);
+	cmd.add(argFileOut);
 	ValueArg<string> argDirOut("", "dir-out", "Output directory. Default: " cDirOutputDefault,
 								false, cDirOutputDefault, "string");
 	cmd.add(argDirOut);
@@ -173,8 +174,13 @@ int main(int argc, char *argv[])
 	cmd.add(argDisableSimd);
 #endif
 #if APP_HAS_VULKAN
+	ValueArg<string> argFileShader("", "file-shader", "Name of the shader file. Default: " cFileShaderDefault,
+								false, cFileShaderDefault, "string");
+	cmd.add(argFileShader);
 	SwitchArg argDisableGpu("", "no-gpu", "Disable usage of GPU", false);
 	cmd.add(argDisableGpu);
+	SwitchArg argDisableCacheShader("", "no-shader-cache", "Disable caching of shader files", false);
+	cmd.add(argDisableCacheShader);
 #endif
 	ValueArg<uint16_t> argPort("", "port-telnet", "Start in server mode if not zero. Default: 0", false, 0, "uint");
 	cmd.add(argPort);
@@ -233,14 +239,16 @@ int main(int argc, char *argv[])
 #endif
 
 	// Application
-	env.nameFile = argNameFile.getValue();
+	env.nameFile = argFileOut.getValue();
 	env.dirOutput = argDirOut.getValue();
 	env.forceDouble = argForceDouble.getValue();
 #if APP_HAS_AVX2
 	env.disableSimd = argDisableSimd.getValue();
 #endif
 #if APP_HAS_VULKAN
+	env.nameFileShader = argFileShader.getValue();
 	env.disableGpu = argDisableGpu.getValue();
+	env.disableCacheShader = argDisableCacheShader.getValue();
 #endif
 	env.port = argPort.getValue();
 

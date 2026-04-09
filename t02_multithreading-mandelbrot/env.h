@@ -40,7 +40,9 @@ struct Environment
 	bool disableSimd;
 #endif
 #if APP_HAS_VULKAN
+	std::string nameFileShader;
 	bool disableGpu;
+	bool disableCacheShader;
 #endif
 	uint16_t port;
 
