@@ -383,8 +383,13 @@ bool Supervising::mustCompileShader()
 
 	TimePoint tpSource, tpCompiled;
 
-	tpSource = tpFileModified(env.nameFileShader);
-	tpCompiled = tpFileModified(shaderBin);
+	ok = tpFileModified(env.nameFileShader, tpSource);
+	if (!ok)
+		return true;
+
+	ok = tpFileModified(shaderBin, tpCompiled);
+	if (!ok)
+		return true;
 
 	if (tpCompiled < tpSource)
 		return true;
