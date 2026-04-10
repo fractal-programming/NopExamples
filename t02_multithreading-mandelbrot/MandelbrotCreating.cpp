@@ -223,7 +223,6 @@ Success MandelbrotCreating::vulkanStart()
 	mpCompute->bufferOutAdd(5, 120);
 
 	mpCompute->shaderUse("mandel");
-	mpCompute->infoDebugShaders = true;
 
 	start(mpCompute);
 

@@ -35,6 +35,7 @@
 #include "LibMandel.h"
 #if APP_HAS_VULKAN
 #include "DeviceVulkan.h"
+#include "VulkanComputing.h"
 #endif
 
 #include "env.h"
@@ -397,7 +398,7 @@ bool Supervising::mustCompileShader()
 
 	// Cache hit
 
-	ShaderCompiling::fileBinaryAdd("mandel", nameFileBin);
+	VulkanComputing::fileBinaryAdd("mandel", nameFileBin);
 
 	return false;
 }
@@ -437,6 +438,7 @@ bool Supervising::compilerStart()
 	}
 
 	mpComp->fileSourceAdd("mandel", env.nameFileShader);
+	mpComp->infoDebugEnabled = true;
 
 	start(mpComp);
 
