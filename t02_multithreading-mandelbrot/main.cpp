@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
 	env.daemonDebug = argDebug.getValue();
 
 	res = argVerbosity.getValue();
-	if (res > 0 && res < 6)
+	if (res >= 0 && res < 6)
 		env.verbosity = res;
 #if defined(__unix__)
 	env.coreDump = argCoreDump.getValue();
