@@ -376,9 +376,9 @@ bool Supervising::mustCompileShader()
 
 	// Cache misses
 
-	string shaderBin = env.nameFileShader + ".bin";
+	string nameFileBin = env.nameFileShader + ".bin";
 
-	ok = fileExists(shaderBin);
+	ok = fileExists(nameFileBin);
 	if (!ok)
 		return true;
 
@@ -388,7 +388,7 @@ bool Supervising::mustCompileShader()
 	if (!ok)
 		return true;
 
-	ok = tpFileModified(shaderBin, tpCompiled);
+	ok = tpFileModified(nameFileBin, tpCompiled);
 	if (!ok)
 		return true;
 
@@ -397,8 +397,7 @@ bool Supervising::mustCompileShader()
 
 	// Cache hit
 
-	// TODO: Binary add
-	// ShaderCompiling static function
+	ShaderCompiling::fileBinaryAdd("mandel", nameFileBin);
 
 	return false;
 }
@@ -437,7 +436,7 @@ bool Supervising::compilerStart()
 		return false;
 	}
 
-	// TODO: Set source file
+	mpComp->fileSourceAdd("mandel", env.nameFileShader);
 
 	start(mpComp);
 
