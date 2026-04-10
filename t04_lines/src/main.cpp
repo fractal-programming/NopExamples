@@ -119,8 +119,7 @@ int main(int argc, char *argv[])
 	cmd.parse(argc, argv);
 
 	int res = argVerbosity.getValue();
-	if (res >= 0 && res < 6)
-		env.verbosity = res;
+	env.verbosity = PMIN(PMAX(res, 1), 5);
 #if defined(__unix__)
 	env.coreDump = argCoreDump.getValue();
 #endif
