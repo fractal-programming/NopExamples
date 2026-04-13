@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
 		if (!pApp->progress())
 			break;
 
-		this_thread::sleep_for(milliseconds(15));
+		this_thread::sleep_for(milliseconds(2));
 	}
 
 	Success success = pApp->success();

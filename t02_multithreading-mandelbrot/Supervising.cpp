@@ -71,6 +71,8 @@ dProcessStateStr(SdState);
 
 using namespace std;
 
+const string cNameShader = "mandel";
+
 Supervising::Supervising()
 	: Processing("Supervising")
 	//, mStartMs(0)
@@ -146,6 +148,13 @@ Success Supervising::process()
 			return procErrLog(-1, "could not compile shader");
 
 		repel(mpComp);
+
+		{
+			string nameFileBin = env.nameFileShader + ".bin";
+			ok = VulkanComputing::fileBinaryWrite(cNameShader, nameFileBin);
+			if (!ok)
+				procWrnLog("could not write shader binary file");
+		}
 #endif
 		mState = StServiceStart;
 
@@ -367,39 +376,6 @@ void Supervising::peerAdd()
 	}
 }
 
-#if APP_HAS_VULKAN
-bool Supervising::vulkanInit()
-{
-	const string aliasDev = "main";
-	bool ok;
-
-	DeviceVulkan::validationBasic();
-	DeviceVulkan::validationGpu();
-
-	DeviceVulkan::physList();
-
-	ok = DeviceVulkan::phySelectAndRegister(aliasDev, NULL,
-						VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
-	if (!ok)
-	{
-		procErrLog(-1, "could not select and register Vulkan device");
-		return false;
-	}
-
-	DeviceVulkan dev;
-
-	ok = DeviceVulkan::registeredGet(aliasDev, dev);
-	if (!ok)
-	{
-		procErrLog(-1, "could not get Vulkan device");
-		return false;
-	}
-
-	procDbgLog("Selected device: %s", dev.name().c_str());
-
-	return true;
-}
-#endif
 #if APP_HAS_GLSLANG
 bool Supervising::mustCompileShader()
 {
@@ -442,7 +418,7 @@ bool Supervising::mustCompileShader()
 
 	// Cache hit
 
-	VulkanComputing::fileBinaryAdd("mandel", nameFileBin);
+	VulkanComputing::fileBinaryAdd(cNameShader, nameFileBin);
 
 	return false;
 }
@@ -456,7 +432,7 @@ bool Supervising::compilerStart()
 		return false;
 	}
 
-	mpComp->fileSourceAdd("mandel", env.nameFileShader);
+	mpComp->fileSourceAdd(cNameShader, env.nameFileShader);
 	mpComp->infoDebugEnabled = true;
 
 	start(mpComp);
@@ -569,4 +545,38 @@ void Supervising::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
+
+#if APP_HAS_VULKAN
+bool Supervising::vulkanInit()
+{
+	const string aliasDev = "main";
+	bool ok;
+
+	DeviceVulkan::validationBasic();
+	DeviceVulkan::validationGpu();
+
+	DeviceVulkan::physList();
+
+	ok = DeviceVulkan::phySelectAndRegister(aliasDev, NULL,
+						VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
+	if (!ok)
+	{
+		errLog(-1, "could not select and register Vulkan device");
+		return false;
+	}
+
+	DeviceVulkan dev;
+
+	ok = DeviceVulkan::registeredGet(aliasDev, dev);
+	if (!ok)
+	{
+		errLog(-1, "could not get Vulkan device");
+		return false;
+	}
+
+	dbgLog("Selected device: %s", dev.name().c_str());
+
+	return true;
+}
+#endif
 

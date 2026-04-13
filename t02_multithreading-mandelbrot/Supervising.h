@@ -67,9 +67,6 @@ private:
 	bool mandelbrotStart();
 	bool serverStart();
 	void peerAdd();
-#if APP_HAS_VULKAN
-	bool vulkanInit();
-#endif
 #if APP_HAS_GLSLANG
 	bool mustCompileShader();
 	bool compilerStart();
@@ -92,6 +89,9 @@ private:
 #endif
 
 	/* static functions */
+#if APP_HAS_VULKAN
+	static bool vulkanInit();
+#endif
 
 	/* static variables */
 
