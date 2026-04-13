@@ -184,10 +184,10 @@ int main(int argc, char *argv[])
 #endif
 	ValueArg<uint16_t> argPort("", "port-telnet", "Start in server mode if not zero. Default: 0", false, 0, "uint");
 	cmd.add(argPort);
-	ValueArg<size_t> argImgWidth("", "img-width", "Width of generated image. Default: " cImgWidthDefault,
+	ValueArg<uint32_t> argImgWidth("", "img-width", "Width of generated image. Default: " cImgWidthDefault,
 								false, atoi(cImgWidthDefault), "uint");
 	cmd.add(argImgWidth);
-	ValueArg<size_t> argImgHeight("", "img-height", "Height of generated image. Default: " cImgHeightDefault,
+	ValueArg<uint32_t> argImgHeight("", "img-height", "Height of generated image. Default: " cImgHeightDefault,
 								false, atoi(cImgHeightDefault), "uint");
 	cmd.add(argImgHeight);
 	ValueArg<double> argPosX("", "pos-x", "X-Position in the complex plane. Default: " cPosXDefault,
@@ -206,16 +206,16 @@ int main(int argc, char *argv[])
 								"\next = External     (thread pool)",
 								false, cTypeDriverDefault, "string");
 	cmd.add(argTypeDriver);
-	ValueArg<size_t> argNumIterMax("", "iter-max", "Maximum number of Mandelbrot iterations per pixel. Default: " cNumIterMaxDefault,
+	ValueArg<uint32_t> argNumIterMax("", "iter-max", "Maximum number of Mandelbrot iterations per pixel. Default: " cNumIterMaxDefault,
 								false, atoi(cNumIterMaxDefault), "uint");
 	cmd.add(argNumIterMax);
-	ValueArg<size_t> argThreadsPool("", "num-threads-pool", "Number of threads used by the thread-pool. Default: " cNumThreadsPoolDefault,
+	ValueArg<uint32_t> argThreadsPool("", "num-threads-pool", "Number of threads used by the thread-pool. Default: " cNumThreadsPoolDefault,
 								false, atoi(cNumThreadsPoolDefault), "uint");
 	cmd.add(argThreadsPool);
-	ValueArg<size_t> argNumFillers("", "num-fillers", "Number of parallel line filler processes. Default: " cNumFillersDefault,
+	ValueArg<uint32_t> argNumFillers("", "num-fillers", "Number of parallel line filler processes. Default: " cNumFillersDefault,
 								false, atoi(cNumFillersDefault), "uint");
 	cmd.add(argNumFillers);
-	ValueArg<size_t> argNumBurst("", "num-burst", "Pixel blocks processed per filler per scheduler tick. Default: " cNumBurstDefault,
+	ValueArg<uint32_t> argNumBurst("", "num-burst", "Pixel blocks processed per filler per scheduler tick. Default: " cNumBurstDefault,
 								false, atoi(cNumBurstDefault), "uint");
 	cmd.add(argNumBurst);
 

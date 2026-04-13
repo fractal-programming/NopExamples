@@ -53,10 +53,10 @@ struct Environment
 	double zoom;
 
 	std::string typeDriver;
-	size_t numIterMax;
-	size_t numThreadsPool;
-	size_t numFillers;
-	size_t numBurst;
+	uint32_t numIterMax;
+	uint32_t numThreadsPool;
+	uint32_t numFillers;
+	uint32_t numBurst;
 };
 
 extern Environment env;

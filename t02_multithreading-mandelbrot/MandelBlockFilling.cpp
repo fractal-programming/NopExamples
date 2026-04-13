@@ -116,8 +116,8 @@ Success MandelBlockFilling::process()
 
 Success MandelBlockFilling::lineFill()
 {
-	size_t numRemaining, numBurst; // Unit: Blocks
-	size_t numPixelProcessed;
+	uint32_t numRemaining, numBurst; // Unit: Blocks
+	uint32_t numPixelProcessed;
 
 	numRemaining = mNumBlock - mIdxBlock;
 	numBurst = PMIN(numRemaining, mpCfg->numBurst);
@@ -146,7 +146,7 @@ Success MandelBlockFilling::lineFill()
 	return Positive;
 }
 
-void MandelBlockFilling::colorMandelbrotChunks(char *pData, size_t idxLine, size_t idxPixel, size_t numPixel)
+void MandelBlockFilling::colorMandelbrotChunks(char *pData, uint32_t idxLine, uint32_t idxPixel, uint32_t numPixel)
 {
 #if APP_HAS_AVX2
 	if (numPixel == mNumElemPerBlock && !mpCfg->disableSimd)
@@ -155,7 +155,7 @@ void MandelBlockFilling::colorMandelbrotChunks(char *pData, size_t idxLine, size
 		return;
 	}
 #endif
-	for (size_t i = 0; i < numPixel; ++i)
+	for (uint32_t i = 0; i < numPixel; ++i)
 	{
 		mNumIter += colorMandelbrotScalar(mpCfg, pData, idxLine, idxPixel);
 

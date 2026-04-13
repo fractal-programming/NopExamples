@@ -46,11 +46,11 @@ public:
 	// Input
 	ConfigMandelbrot *mpCfg;
 
-	size_t mIdxLine;
+	uint32_t mIdxLine;
 	char *mpLine;
 
 	// Input
-	size_t mNumIter;
+	uint32_t mNumIter;
 
 	static void gradientBuild();
 
@@ -74,15 +74,15 @@ private:
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	Success lineFill();
-	void colorMandelbrotChunks(char *pData, size_t idxLine, size_t idxPixel, size_t numPixel);
+	void colorMandelbrotChunks(char *pData, uint32_t idxLine, uint32_t idxPixel, uint32_t numPixel);
 
 	/* member variables */
 	uint32_t mStartMs;
-	size_t mNumElemPerBlock;
-	size_t mNumBlock;
-	size_t mIdxBlock;
-	size_t mNumPixel;
-	size_t mIdxPixel;
+	uint32_t mNumElemPerBlock;
+	uint32_t mNumBlock;
+	uint32_t mIdxBlock;
+	uint32_t mNumPixel;
+	uint32_t mIdxPixel;
 	char *mpData;
 
 	/* static functions */

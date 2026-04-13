@@ -83,7 +83,7 @@ private:
 	uint32_t mStateSd;
 	MandelbrotCreating *mpMbCreate;
 	TcpListening *mpListen;
-	size_t mIdxLineDone;
+	uint32_t mIdxLineDone;
 #if APP_HAS_VULKAN
 	ShaderCompiling *mpComp;
 #endif

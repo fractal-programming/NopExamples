@@ -51,13 +51,13 @@ public:
 	ConfigMandelbrot cfg;
 
 	std::string mTypeDriver;
-	size_t mNumThreadsPool;
-	size_t mNumFillers;
+	uint32_t mNumThreadsPool;
+	uint32_t mNumFillers;
 
 	// Output
 
 	// Monitoring
-	size_t mIdxLineDone;
+	uint32_t mIdxLineDone;
 
 	// Result
 	size_t mNumIterations;
@@ -92,12 +92,12 @@ private:
 	uint32_t mStartMs;
 	char *mpBuffer;
 	char *mpBufferEnd;
-	size_t mSzBuffer;
+	uint32_t mSzBuffer;
 	FileBmp mBmp;
 
 	std::list<MandelBlockFilling *> mLstFillers;
 
-	size_t mIdxLineFiller;
+	uint32_t mIdxLineFiller;
 	char *mpLineFiller;
 #if APP_HAS_VULKAN
 	VulkanComputing *mpCompute;

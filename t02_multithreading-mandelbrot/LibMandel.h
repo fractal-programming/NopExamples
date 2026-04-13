@@ -75,22 +75,16 @@ struct ConfigMandelbrot
 	// Image
 	uint32_t imgWidth;
 	uint32_t imgHeight;
-	size_t szData;
-	size_t szLine;
-	size_t szPadding;
-	std::string nameFile;
-	std::string dirOut;
+	uint32_t szData;
+	uint32_t szLine;
+	uint32_t szPadding;
 
 	// Mandelbrot
-	bool forceDouble;
-	bool useDouble;
-#if APP_HAS_AVX2
-	bool disableSimd;
-#endif
-#if APP_HAS_VULKAN
-	bool disableGpu;
-#endif
-	size_t numIterMax;
+	uint32_t forceDouble;
+	uint32_t useDouble;
+	uint32_t disableSimd;
+	uint32_t disableGpu;
+	uint32_t numIterMax;
 	MbValFull posX;
 	MbValFull posY;
 	MbValFull zoom;
@@ -101,7 +95,7 @@ struct ConfigMandelbrot
 	MbValFull scaleY;
 
 	// Filling
-	size_t numBurst;
+	uint32_t numBurst;
 };
 
 void libMandelInit();
