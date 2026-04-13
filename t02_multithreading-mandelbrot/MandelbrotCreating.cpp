@@ -29,6 +29,7 @@
 #include "MandelbrotCreating.h"
 #include "ThreadPooling.h"
 #include "LibTime.h"
+#include "LibDspc.h"
 
 #define dForEach_ProcState(gen) \
 		gen(StStart) \
@@ -194,6 +195,27 @@ Success MandelbrotCreating::process()
 		if (success != Positive)
 			return procErrLog(-1, "could not compute Mandelbrot set");
 
+		{
+			void *pResult;
+			size_t sz;
+
+			pResult = mpCompute->bufferMap(1);
+			if (!pResult)
+				return procErrLog(-1, "could not map result");
+
+			hexDump(pResult, 32, "Result");
+
+			pResult = mpCompute->bufferMap(5, &sz);
+			if (!pResult)
+				return procErrLog(-1, "could not map result");
+
+			hexDump(pResult, sz, "Result");
+
+			mpCompute->bufferUnmap(5);
+		}
+
+		repel(mpCompute);
+
 		mDurationMs = diffMs;
 
 		return Positive;
@@ -218,11 +240,18 @@ Success MandelbrotCreating::vulkanStart()
 	if (!mpCompute)
 		return procErrLog(-1, "could not create process");
 
-	mpCompute->bufferInAdd(0, sizeof(cfg), &cfg);
-	mpCompute->bufferInAdd(1, numElemGrad * sizeof(GradientStop), pStartGrad);
-	mpCompute->bufferOutAdd(5, 120);
-
 	mpCompute->shaderUse("mandel");
+
+	// Input
+	mpCompute->bufferInAdd(0, NULL, sizeof(cfg), &cfg);
+	mpCompute->bufferInAdd(1, NULL, numElemGrad * sizeof(GradientStop), pStartGrad);
+
+	hexDump(pStartGrad, 32);
+
+	// Output
+	mpCompute->bufferOutAdd(5, NULL, 120);
+	mpCompute->bufferOutAdd(6, NULL, 120);
+	mpCompute->bufferOutAdd(7, NULL, 120);
 
 	start(mpCompute);
 

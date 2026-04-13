@@ -555,7 +555,7 @@ bool Supervising::vulkanInit()
 	DeviceVulkan::validationBasic();
 	DeviceVulkan::validationGpu();
 
-	DeviceVulkan::physList();
+	//DeviceVulkan::physList();
 
 	ok = DeviceVulkan::phySelectAndRegister(aliasDev, NULL,
 						VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
