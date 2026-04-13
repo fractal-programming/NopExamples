@@ -199,11 +199,11 @@ Success MandelbrotCreating::process()
 			void *pResult;
 			size_t sz;
 
-			pResult = mpCompute->bufferMap(1);
+			pResult = mpCompute->bufferMap(0, &sz);
 			if (!pResult)
 				return procErrLog(-1, "could not map result");
 
-			hexDump(pResult, 32, "Result");
+			hexDump(pResult, sz, "Result");
 
 			pResult = mpCompute->bufferMap(5, &sz);
 			if (!pResult)
@@ -246,7 +246,7 @@ Success MandelbrotCreating::vulkanStart()
 	mpCompute->bufferInAdd(0, NULL, sizeof(cfg), &cfg);
 	mpCompute->bufferInAdd(1, NULL, numElemGrad * sizeof(GradientStop), pStartGrad);
 
-	hexDump(pStartGrad, 32);
+	hexDump(&cfg, sizeof(cfg));
 
 	// Output
 	mpCompute->bufferOutAdd(5, NULL, 120);
