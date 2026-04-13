@@ -105,11 +105,19 @@ Success Supervising::process()
 		ok = basicsStart();
 		if (!ok)
 			return procErrLog(-1, "could not start basic services");
-
+#if APP_HAS_VULKAN
+		ok = vulkanInit();
+		if (!ok)
+		{
+			procWrnLog("could not initialize Vulkan. GPU computation disabled");
+			env.disableGpu = true;
+		}
+#endif
 #if APP_HAS_GLSLANG
 		ok = mustCompileShader();
 		if (ok)
 		{
+			procDbgLog("Compiling shaders");
 			mState = StShaderStart;
 			break;
 		}
@@ -359,9 +367,45 @@ void Supervising::peerAdd()
 	}
 }
 
+#if APP_HAS_VULKAN
+bool Supervising::vulkanInit()
+{
+	const string aliasDev = "main";
+	bool ok;
+
+	DeviceVulkan::validationBasic();
+	DeviceVulkan::validationGpu();
+
+	DeviceVulkan::physList();
+
+	ok = DeviceVulkan::phySelectAndRegister(aliasDev, NULL,
+						VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
+	if (!ok)
+	{
+		procErrLog(-1, "could not select and register Vulkan device");
+		return false;
+	}
+
+	DeviceVulkan dev;
+
+	ok = DeviceVulkan::registeredGet(aliasDev, dev);
+	if (!ok)
+	{
+		procErrLog(-1, "could not get Vulkan device");
+		return false;
+	}
+
+	procDbgLog("Selected device: %s", dev.name().c_str());
+
+	return true;
+}
+#endif
 #if APP_HAS_GLSLANG
 bool Supervising::mustCompileShader()
 {
+	if (env.disableGpu)
+		return false;
+
 	bool ok;
 
 	ok = fileExists(env.nameFileShader);
@@ -405,31 +449,6 @@ bool Supervising::mustCompileShader()
 
 bool Supervising::compilerStart()
 {
-	string aliasDev = "main";
-	bool ok;
-
-	DeviceVulkan::physList();
-	DeviceVulkan::gpuAvEnabledSet();
-
-	ok = DeviceVulkan::phySelectAndRegister(aliasDev, NULL,
-						VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
-	if (!ok)
-	{
-		procErrLog(-1, "could not select and register Vulkan device");
-		return false;
-	}
-
-	DeviceVulkan dev;
-
-	ok = DeviceVulkan::registeredGet(aliasDev, dev);
-	if (!ok)
-	{
-		procErrLog(-1, "could not get Vulkan device");
-		return false;
-	}
-
-	procDbgLog("Selected device: %s", dev.name().c_str());
-
 	mpComp = ShaderCompiling::create();
 	if (!mpComp)
 	{

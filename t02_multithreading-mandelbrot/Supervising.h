@@ -68,6 +68,9 @@ private:
 	bool serverStart();
 	void peerAdd();
 #if APP_HAS_VULKAN
+	bool vulkanInit();
+#endif
+#if APP_HAS_GLSLANG
 	bool mustCompileShader();
 	bool compilerStart();
 #endif
