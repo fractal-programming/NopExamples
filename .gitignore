@@ -3,4 +3,5 @@ ext/
 build*
 *.log
 *.bmp
+*.bin
 
