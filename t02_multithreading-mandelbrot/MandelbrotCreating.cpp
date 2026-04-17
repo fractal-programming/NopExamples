@@ -229,6 +229,12 @@ Success MandelbrotCreating::process()
 }
 
 #if APP_HAS_VULKAN
+#define dIdBufferConfig		0
+#define dIdBufferGradients	1
+#define dIdBufferDebug		5
+#define dIdBufferResults		6
+#define dIdBufferStats		7
+
 Success MandelbrotCreating::vulkanStart()
 {
 	GradientStop *pStartGrad;
@@ -243,15 +249,15 @@ Success MandelbrotCreating::vulkanStart()
 	mpCompute->shaderUse("mandel");
 
 	// Input
-	mpCompute->bufferInAdd(0, sizeof(cfg), &cfg);
-	mpCompute->bufferInAdd(1, numElemGrad * sizeof(GradientStop), pStartGrad);
+	mpCompute->bufferInAdd(dIdBufferConfig, sizeof(cfg), &cfg);
+	mpCompute->bufferInAdd(dIdBufferGradients, numElemGrad * sizeof(GradientStop), pStartGrad);
 
 	hexDump(&cfg, sizeof(cfg));
 
 	// Output
-	mpCompute->bufferOutAdd(5, 120);
-	mpCompute->bufferOutAdd(6, 120);
-	mpCompute->bufferOutAdd(7, 120);
+	mpCompute->bufferOutAdd(dIdBufferDebug, 120);
+	mpCompute->bufferOutAdd(dIdBufferResults, 120);
+	mpCompute->bufferOutAdd(dIdBufferStats, 120);
 
 	start(mpCompute);
 
