@@ -204,13 +204,13 @@ Success MandelbrotCreating::process()
 				return procErrLog(-1, "could not map result");
 
 			hexDump(pResult, sz, "Result");
+			mpCompute->bufferUnmap(0);
 
 			pResult = mpCompute->bufferMap(5, &sz);
 			if (!pResult)
 				return procErrLog(-1, "could not map result");
 
 			hexDump(pResult, sz, "Result");
-
 			mpCompute->bufferUnmap(5);
 		}
 
