@@ -311,9 +311,11 @@ bool Supervising::mandelbrotStart()
 
 	ConfigMandelbrot *pMandel = &mpMbCreate->cfg;
 
+	// Image
 	pMandel->imgWidth = env.imgWidth;
 	pMandel->imgHeight = env.imgHeight;
 
+	// Mandelbrot
 	pMandel->forceDouble = env.forceDouble;
 	pMandel->useDouble = env.zoom > cZoomFloatMax || env.forceDouble;
 #if APP_HAS_AVX2
@@ -322,11 +324,19 @@ bool Supervising::mandelbrotStart()
 #if APP_HAS_VULKAN
 	pMandel->disableGpu = env.disableGpu;
 #endif
+	pMandel->numIterMax = env.numIterMax;
 	pMandel->posX = env.posX;
 	pMandel->posY = env.posY;
 	pMandel->zoom = env.zoom;
-	pMandel->numIterMax = env.numIterMax;
+
+	// Filling
+	GradientStop *pStartGrad;
+	size_t numElemGrad;
+
+	gradientsGet(pStartGrad, numElemGrad);
+
 	pMandel->numBurst = env.numBurst;
+	pMandel->numGradients = numElemGrad;
 
 	configPrint(pMandel);
 
