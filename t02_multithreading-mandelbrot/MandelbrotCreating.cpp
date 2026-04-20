@@ -250,7 +250,10 @@ Success MandelbrotCreating::vulkanStart()
 	if (!mpCompute)
 		return procErrLog(-1, "could not create process");
 
-	mpCompute->workgroupsSet(1024, 1024);
+	uint32_t numWorkgroupsX = (cfg.imgWidth  + 15) / 16;
+	uint32_t numWorkgroupsY = (cfg.imgHeight + 15) / 16;
+
+	mpCompute->workgroupsSet(numWorkgroupsX, numWorkgroupsY);
 
 	mpCompute->shaderUse("mandel");
 
