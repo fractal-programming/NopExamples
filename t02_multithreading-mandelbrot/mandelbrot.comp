@@ -144,11 +144,8 @@ void colorSet(uvec2 posPixel, uint idColor, int value)
 	uint baseElemInt = startColorInt * 4;
 	uint offsetColorByte = startColorByte - baseElemInt;
 
-	uint bkup = results[startLineInt + startColorInt];
 	uint numShift = (offsetColorByte * 8);
 	uint mask = 0xFF << numShift;
-
-	bkup &= ~mask; // Remove uninit
 
 	atomicAnd(results[startLineInt + startColorInt], ~mask);
 	atomicOr (results[startLineInt + startColorInt], (value & 0xFF) << numShift);
