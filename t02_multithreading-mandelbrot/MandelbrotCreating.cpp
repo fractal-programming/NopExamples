@@ -199,7 +199,7 @@ Success MandelbrotCreating::process()
 			return procErrLog(-1, "could not compute Mandelbrot set");
 
 		{
-			void *pResult;
+			const char *pResult;
 			size_t sz;
 #if 0
 			pResult = mpCompute->bufferMap(dIdBufferDebug, &sz);
@@ -209,9 +209,16 @@ Success MandelbrotCreating::process()
 			hexDump(pResult, sz, "Debug");
 			mpCompute->bufferUnmap(dIdBufferDebug);
 #endif
-			pResult = mpCompute->bufferMap(dIdBufferResults, &sz);
+			pResult = (const char *)mpCompute->bufferMap(dIdBufferResults, &sz);
 			if (!pResult)
 				return procErrLog(-1, "could not map result");
+
+			for (size_t i = 0; i < cfg.imgHeight; ++i, pResult += cfg.szLine)
+			{
+				ok = mBmp.lineWrite(pResult, cfg.szLine);
+				if (!ok)
+					return procErrLog(-1, "could not write line");
+			}
 
 			//hexDump(pResult, sz, "Result", 12);
 			mpCompute->bufferUnmap(dIdBufferResults);
