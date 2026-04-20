@@ -236,8 +236,6 @@ void colorMandelbrot(uvec2 posPixel, out uint numIter)
 	colorSet(posPixel, dBlue, c.z);
 	colorSet(posPixel, dGreen, c.y);
 	colorSet(posPixel, dRed, c.x);
-
-	debug[4 * posPixel.y + posPixel.x] = idxGrad1;
 }
 
 void colorMandelbrotDouble(uvec2 posPixel, out uint numIter)
