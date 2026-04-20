@@ -151,22 +151,13 @@ void colorSet(uvec2 posPixel, uint idColor, int value)
 	atomicOr (results[startLineInt + startColorInt], (value & 0xFF) << numShift);
 }
 
-// Color unpackColor(uint)
-// uint packColor(Color)
-
-/*
-int val = RR GG BB 00
-int c.x = RR 00 00 00
-int c.y = GG 00 00 00
-int c.z = BB 00 00 00
-*/
 Color unpackColor(int val)
 {
 	Color c;
 
-	c.x = ((val << 24) >> 24);
-	c.y = ((val << 16) >> 24);
-	c.z = ((val <<  8) >> 24);
+	c.x = val & 0xFF;
+	c.y = (val >> 8) & 0xFF;
+	c.z = (val >> 16) & 0xFF;
 
 	return c;
 }
