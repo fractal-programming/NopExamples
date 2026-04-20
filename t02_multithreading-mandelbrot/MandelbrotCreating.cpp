@@ -47,6 +47,12 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
+#define dIdBufferConfig		0
+#define dIdBufferGradients	1
+#define dIdBufferDebug		5
+#define dIdBufferResults		6
+#define dIdBufferStats		7
+
 MandelbrotCreating::MandelbrotCreating()
 	: Processing("MandelbrotCreating")
 	, mNameFile()
@@ -195,20 +201,20 @@ Success MandelbrotCreating::process()
 		{
 			void *pResult;
 			size_t sz;
-
-			pResult = mpCompute->bufferMap(0, &sz);
+#if 0
+			pResult = mpCompute->bufferMap(dIdBufferDebug, &sz);
 			if (!pResult)
 				return procErrLog(-1, "could not map result");
 
-			hexDump(pResult, sz, "Result");
-			mpCompute->bufferUnmap(0);
-
-			pResult = mpCompute->bufferMap(5, &sz);
+			hexDump(pResult, sz, "Debug");
+			mpCompute->bufferUnmap(dIdBufferDebug);
+#endif
+			pResult = mpCompute->bufferMap(dIdBufferResults, &sz);
 			if (!pResult)
 				return procErrLog(-1, "could not map result");
 
-			hexDump(pResult, sz, "Result");
-			mpCompute->bufferUnmap(5);
+			//hexDump(pResult, sz, "Result", 12);
+			mpCompute->bufferUnmap(dIdBufferResults);
 		}
 
 		repel(mpCompute);
@@ -226,12 +232,6 @@ Success MandelbrotCreating::process()
 }
 
 #if APP_HAS_VULKAN
-#define dIdBufferConfig		0
-#define dIdBufferGradients	1
-#define dIdBufferDebug		5
-#define dIdBufferResults		6
-#define dIdBufferStats		7
-
 Success MandelbrotCreating::vulkanStart()
 {
 	GradientStop *pStartGrad;
@@ -243,11 +243,7 @@ Success MandelbrotCreating::vulkanStart()
 	if (!mpCompute)
 		return procErrLog(-1, "could not create process");
 
-	uint32_t numElements = 120 / sizeof(uint32_t);
-	uint32_t szWorkgroup = 7;
-	uint32_t numWorkgroups = (numElements + szWorkgroup - 1) / szWorkgroup;
-
-	mpCompute->workgroupsSet(numWorkgroups);
+	mpCompute->workgroupsSet(1024, 1024);
 
 	mpCompute->shaderUse("mandel");
 
@@ -255,11 +251,11 @@ Success MandelbrotCreating::vulkanStart()
 	mpCompute->bufferInAdd(dIdBufferConfig, sizeof(cfg), &cfg);
 	mpCompute->bufferInAdd(dIdBufferGradients, numElemGrad * sizeof(GradientStop), pStartGrad);
 
-	hexDump(&cfg, sizeof(cfg));
+	//hexDump(&cfg, sizeof(cfg), "Config");
 
 	// Output
-	mpCompute->bufferOutAdd(dIdBufferDebug, 120);
-	mpCompute->bufferOutAdd(dIdBufferResults, 120);
+	mpCompute->bufferOutAdd(dIdBufferDebug, 128);
+	mpCompute->bufferOutAdd(dIdBufferResults, cfg.szLine * cfg.imgHeight);
 	mpCompute->bufferOutAdd(dIdBufferStats, 120);
 
 	start(mpCompute);

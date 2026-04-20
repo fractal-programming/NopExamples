@@ -285,7 +285,7 @@ bool Supervising::basicsStart()
 	}
 
 	pPool->cntWorkerSet(env.numThreadsPool);
-	//pPool->procTreeDisplaySet(false);
+	pPool->procTreeDisplaySet(false);
 
 	start(pPool);
 
