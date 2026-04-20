@@ -96,6 +96,7 @@ struct ConfigMandelbrot
 
 	// Filling
 	uint32_t numBurst;
+	uint32_t numGradients;
 };
 
 void libMandelInit();
