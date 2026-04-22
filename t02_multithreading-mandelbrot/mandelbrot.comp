@@ -64,9 +64,9 @@ startLineInt    = 12 >> 2 =  3
 
 startPixelByte  = 3 * 1   = 3
 startColorByte  = 3 + 1   = 4
-startColorInt   = 4 >> 2  = 1
 
-baseElemInt     = 1 * 4   = 4
+startColorInt   = 4 >> 2  = 1
+baseElemByte    = 1 * 4   = 4
 offsetColorByte = 4 - 4   = 0
 */
 void colorSet(uvec2 posPixel, uint idColor, int value)
@@ -76,12 +76,13 @@ void colorSet(uvec2 posPixel, uint idColor, int value)
 
 	uint startPixelByte = dBytesPerPixel * posPixel.x;
 	uint startColorByte = startPixelByte + idColor;
+
+	// Split startColorByte into (startColorInt, offsetColorByte)
 	uint startColorInt = startColorByte >> 2;
+	uint baseElemByte = startColorInt << 2;
+	uint offsetColorByte = startColorByte - baseElemByte;
 
-	uint baseElemInt = startColorInt * 4;
-	uint offsetColorByte = startColorByte - baseElemInt;
-
-	uint numShift = (offsetColorByte * 8);
+	uint numShift = offsetColorByte * 8;
 	uint mask = 0xFF << numShift;
 
 	atomicAnd(results[startLineInt + startColorInt], ~mask);
