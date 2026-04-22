@@ -87,6 +87,7 @@ private:
 	Success argumentsCheck();
 #if APP_HAS_VULKAN
 	Success vulkanStart();
+	Success resultVulkanWrite();
 #endif
 	/* member variables */
 	uint32_t mStartMs;
