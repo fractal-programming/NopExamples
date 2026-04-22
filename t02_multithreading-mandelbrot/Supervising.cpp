@@ -565,8 +565,8 @@ bool Supervising::vulkanInit()
 	const string aliasDev = "main";
 	bool ok;
 
-	DeviceVulkan::validationBasic();
-	DeviceVulkan::validationGpu();
+	//DeviceVulkan::validationBasic();
+	//DeviceVulkan::validationGpu();
 
 	//DeviceVulkan::physList();
 
