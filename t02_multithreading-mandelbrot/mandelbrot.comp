@@ -3,14 +3,19 @@
 #extension GL_ARB_gpu_shader_fp64 : require
 
 #define dSzWorkgroup	16
-
 #define dBlue			0
 #define dGreen			1
 #define dRed			2
-
+#define dBytesPerPixel	3
 #define Color ivec3
 
-layout (local_size_x = dSzWorkgroup, local_size_y = dSzWorkgroup, local_size_z = 1) in;
+// GradientStop: double t (8B) + Color (3x int8: r,g,b) (3B) + 5B padding = 16B
+struct GradientStop
+{
+	double t;
+	int color; // packed: r=bits[7:0], g=bits[15:8], b=bits[23:16]
+	uint pad;
+};
 
 struct ConfigMandelbrot
 {
@@ -38,81 +43,13 @@ struct ConfigMandelbrot
 	uint numGradients;
 };
 
-// GradientStop: double t (8B) + Color (3x int8: r,g,b) (3B) + 5B padding = 16B
-struct GradientStop
-{
-	double t;
-	int color; // packed: r=bits[7:0], g=bits[15:8], b=bits[23:16]
-	uint pad;
-};
+layout (local_size_x = dSzWorkgroup, local_size_y = dSzWorkgroup, local_size_z = 1) in;
 
-layout(std430, binding = 0) readonly buffer BufConfig
-{
-	ConfigMandelbrot cfg;
-};
-
-layout(std430, binding = 1) readonly buffer BufGradients
-{
-	GradientStop gradients[];
-};
-
-layout(std430, binding = 5) buffer BufDebug
-{
-	uint debug[];
-};
-
-layout(std430, binding = 6) buffer BufResults
-{
-	uint results[];
-};
-
-layout(std430, binding = 7) buffer BufStats
-{
-	uint stats[];
-};
-
-float fractionalIter(
-			float zx, float zy,
-			uint numIter)
-{
-	float mag = sqrt(zx * zx + zy * zy);
-	return numIter + 1 - log2(log2(mag));
-}
-
-void mandelbrot(
-		float cx, float cy, uint numIterMax,
-		out float zxOut, out float zyOut, out uint numIterOut)
-{
-	precise float xx, yy, xy, zx, zy;
-	uint numIter;
-
-	zx = 0.0;
-	zy = 0.0;
-
-	numIter = 0;
-
-	while (numIter < numIterMax)
-	{
-		xx = zx * zx;
-		yy = zy * zy;
-
-		if (xx + yy > 4.0)
-			break;
-
-		xy = zx * zy;
-
-		zx = xx - yy + cx;
-		zy = 2 * xy + cy;
-
-		++numIter;
-	}
-
-	zxOut = zx;
-	zyOut = zy;
-	numIterOut = numIter;
-}
-
-#define dBytesPerPixel 3
+layout(std430, binding = 0) readonly buffer BufConfig		{ ConfigMandelbrot cfg;		};
+layout(std430, binding = 1) readonly buffer BufGradients	{ GradientStop gradients[];	};
+layout(std430, binding = 5) buffer BufDebug				{ uint debug[];			};
+layout(std430, binding = 6) buffer BufResults			{ uint results[];			};
+layout(std430, binding = 7) buffer BufStats				{ uint stats[];			};
 
 /*
 Result
@@ -160,6 +97,49 @@ Color unpackColor(int val)
 	c.z = (val >> 16) & 0xFF;
 
 	return c;
+}
+
+// ----------------- FLOAT -----------------
+
+void mandelbrot(
+		float cx, float cy, uint numIterMax,
+		out float zxOut, out float zyOut, out uint numIterOut)
+{
+	precise float xx, yy, xy, zx, zy;
+	uint numIter;
+
+	zx = 0.0;
+	zy = 0.0;
+
+	numIter = 0;
+
+	while (numIter < numIterMax)
+	{
+		xx = zx * zx;
+		yy = zy * zy;
+
+		if (xx + yy > 4.0)
+			break;
+
+		xy = zx * zy;
+
+		zx = xx - yy + cx;
+		zy = 2 * xy + cy;
+
+		++numIter;
+	}
+
+	zxOut = zx;
+	zyOut = zy;
+	numIterOut = numIter;
+}
+
+float fractionalIter(
+			float zx, float zy,
+			uint numIter)
+{
+	float mag = sqrt(zx * zx + zy * zy);
+	return numIter + 1 - log2(log2(mag));
 }
 
 void colorMandelbrot(uvec2 posPixel, out uint numIter)
@@ -226,9 +206,114 @@ void colorMandelbrot(uvec2 posPixel, out uint numIter)
 	colorSet(posPixel, dRed, c.x);
 }
 
+// ----------------- DOUBLE -----------------
+
+void mandelbrotDouble(
+		double cx, double cy, uint numIterMax,
+		out double zxOut, out double zyOut, out uint numIterOut)
+{
+	precise double xx, yy, xy, zx, zy;
+	uint numIter;
+
+	zx = 0.0;
+	zy = 0.0;
+
+	numIter = 0;
+
+	while (numIter < numIterMax)
+	{
+		xx = zx * zx;
+		yy = zy * zy;
+
+		if (xx + yy > 4.0)
+			break;
+
+		xy = zx * zy;
+
+		zx = xx - yy + cx;
+		zy = 2 * xy + cy;
+
+		++numIter;
+	}
+
+	zxOut = zx;
+	zyOut = zy;
+	numIterOut = numIter;
+}
+
+double fractionalIterDouble(
+			double zx, double zy,
+			uint numIter)
+{
+	double mag = sqrt(zx * zx + zy * zy);
+	return numIter + 1 - log2(log2(float(mag)));
+}
+
 void colorMandelbrotDouble(uvec2 posPixel, out uint numIter)
 {
+	// 1. From image pixel space -> Complex space
+
+	double sxf = cfg.scaleX;
+	double syf = cfg.scaleY;
+	double pxf = cfg.posX;
+	double pyf = cfg.posY;
+	double w2f = cfg.w2;
+	double h2f = cfg.h2;
+
+	double idxX = posPixel.x - w2f;
+	double idxY = posPixel.y - h2f;
+	double cx = sxf * idxX + pxf;
+	double cy = syf * idxY + pyf;
+
+	// 2. Do the mandelbrot calculation in complex space
+
+	uint numIterMax = cfg.numIterMax;
+	double zx, zy;
+
+	mandelbrotDouble(cx, cy, numIterMax, zx, zy, numIter);
+
+	// 3. Color mapping from fractional iterator -> RGB color
+
+	if (numIter >= numIterMax)
+	{
+		// Not RGB but BGR! => BMP specific
+		colorSet(posPixel, dBlue, 0);
+		colorSet(posPixel, dGreen, 0);
+		colorSet(posPixel, dRed, 0);
+
+		return;
+	}
+
+	double mu, t, tMin, tMax;
+	uint idxGrad1, idxGrad2;
+	Color cGrad1, cGrad2, c;
+
+	mu = fractionalIterDouble(zx, zy, numIter);
+
+	t = mu * double(0.02);
+	t = t - floor(t);
+
+	tMin = 0.0;
+	tMax = 1.0;
+
+	t = max(tMin, min(tMax, t)); // clamp(t, tMin, tMax)
+
+	idxGrad1 = uint(t * (cfg.numGradients - 1));
+	idxGrad1 = min(idxGrad1, cfg.numGradients - 2);
+	idxGrad2 = idxGrad1 + 1;
+
+	cGrad1 = unpackColor(gradients[idxGrad1].color);
+	cGrad2 = unpackColor(gradients[idxGrad2].color);
+
+	c = cGrad1 + ivec3(vec3(cGrad2 - cGrad1) * t);
+
+	// Not RGB but BGR! => BMP specific
+	colorSet(posPixel, dBlue, c.z);
+	colorSet(posPixel, dGreen, c.y);
+	colorSet(posPixel, dRed, c.x);
 }
+
+// ----------------- MAIN -----------------
 
 void main()
 {
@@ -242,9 +327,9 @@ void main()
 
 	uint numIter;
 
-	if (cfg.useDouble != 0u)
-		colorMandelbrotDouble(posPixel, numIter);
-	else
+	if (cfg.useDouble == 0u)
 		colorMandelbrot(posPixel, numIter);
+	else
+		colorMandelbrotDouble(posPixel, numIter);
 }
 
