@@ -23,15 +23,12 @@
   along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include "Supervising.h"
 #include "SystemDebugging.h"
 #include "ThreadPooling.h"
 #include "UserInteracting.h"
 #include "LibFilesys.h"
+#include "LibTerminal.h"
 #include "LibMandel.h"
 #if APP_HAS_VULKAN
 #include "DeviceVulkan.h"
@@ -174,7 +171,7 @@ Success Supervising::process()
 		if (!ok)
 			return procErrLog(-1, "could not start mandelbrot creation");
 
-		hideCursor();
+		cursorTermHide();
 		progressPrint();
 
 		mState = StMain;
@@ -203,7 +200,7 @@ Success Supervising::process()
 		if (!ok)
 			return procErrLog(-1, "could not start server");
 
-		hideCursor();
+		cursorTermHide();
 
 		mState = StServer;
 
@@ -228,7 +225,7 @@ Success Supervising::shutdown()
 
 		if (!mpMbCreate)
 		{
-			showCursor();
+			cursorTermShow();
 			return Positive;
 		}
 
@@ -242,7 +239,7 @@ Success Supervising::shutdown()
 		if (mpMbCreate->progress())
 			break;
 
-		showCursor();
+		cursorTermShow();
 
 		return Positive;
 
@@ -513,38 +510,6 @@ void Supervising::resultPrint()
 	userInfLog("  Iter. per second         %14.3e", ips);
 	userInfLog("  Pixel * IPS              %14.3e", ips * pCfg->imgWidth * pCfg->imgHeight);
 	userInfLog("");
-}
-
-void Supervising::hideCursor()
-{
-#ifdef _WIN32
-	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_CURSOR_INFO info;
-
-	info.dwSize = 100;
-	info.bVisible = FALSE;
-
-	SetConsoleCursorInfo(consoleHandle, &info);
-#else
-	fprintf(stdout, "\033[?25l");
-	fflush(stdout);
-#endif
-}
-
-void Supervising::showCursor()
-{
-#ifdef _WIN32
-	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_CURSOR_INFO info;
-
-	info.dwSize = 100;
-	info.bVisible = TRUE;
-
-	SetConsoleCursorInfo(consoleHandle, &info);
-#else
-	fprintf(stdout, "\033[?25h");
-	fflush(stdout);
-#endif
 }
 
 void Supervising::processInfo(char *pBuf, char *pBufEnd)

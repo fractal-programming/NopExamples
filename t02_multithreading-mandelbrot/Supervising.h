@@ -75,9 +75,6 @@ private:
 	void progressPrint();
 	void resultPrint();
 
-	void hideCursor();
-	void showCursor();
-
 	/* member variables */
 	//uint32_t mStartMs;
 	uint32_t mStateSd;

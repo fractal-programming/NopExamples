@@ -21,6 +21,7 @@ srcs = [
 	'../deps/LibNaegCommon/KeyUser.cpp',
 	'../deps/LibNaegCommon/LibTime.cpp',
 	'../deps/LibNaegCommon/LibFilesys.cpp',
+	'../deps/LibNaegCommon/LibTerminal.cpp',
 	'../deps/LibNaegCommon/LibDspc.cpp',
 	'../deps/LibNaegCommon/Res.cpp',
 	'../deps/LibNaegCommon/LibBmp.cpp',
