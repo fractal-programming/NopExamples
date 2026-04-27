@@ -246,7 +246,7 @@ Success MandelbrotCreating::vulkanStart()
 	// Output
 	mpCompute->bufferOutAdd(dIdBufferDebug, 128);
 	mpCompute->bufferOutAdd(dIdBufferResults, cfg.szLine * cfg.imgHeight);
-	mpCompute->bufferOutAdd(dIdBufferStats, 120);
+	mpCompute->bufferOutAdd(dIdBufferStats, sizeof(uint32_t) * cfg.imgHeight);
 
 	start(mpCompute);
 
@@ -256,6 +256,7 @@ Success MandelbrotCreating::vulkanStart()
 Success MandelbrotCreating::resultVulkanWrite()
 {
 	const char *pResult;
+	uint32_t *pNumIter;
 	size_t sz;
 #if 0
 	pResult = mpCompute->bufferMap(dIdBufferDebug, &sz);
@@ -269,18 +270,32 @@ Success MandelbrotCreating::resultVulkanWrite()
 	if (!pResult)
 		return procErrLog(-1, "could not map result");
 
-	size_t i = 0;
+	pNumIter = (uint32_t *)mpCompute->bufferMap(dIdBufferStats, &sz);
+	if (!pNumIter)
+	{
+		mpCompute->bufferUnmap(dIdBufferResults);
+		return procErrLog(-1, "could not map statistics");
+	}
+
+	//hexDump(pNumIter, sz, "Statistics");
+
+	size_t i;
 	bool ok;
 
-	for (; i < cfg.imgHeight; ++i, pResult += cfg.szLine)
+	mNumIterations = 0;
+
+	i = 0;
+	for (; i < cfg.imgHeight; ++i, pResult += cfg.szLine, ++pNumIter)
 	{
 		ok = mBmp.lineWrite(pResult, cfg.szLine);
 		if (!ok)
 			return procErrLog(-1, "could not write line");
+
+		mNumIterations += *pNumIter;
 	}
 
-	//hexDump(pResult, sz, "Result", 12);
 	mpCompute->bufferUnmap(dIdBufferResults);
+	mpCompute->bufferUnmap(dIdBufferStats);
 
 	return Positive;
 }
