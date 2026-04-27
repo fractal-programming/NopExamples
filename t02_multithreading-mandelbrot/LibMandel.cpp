@@ -78,7 +78,7 @@ static T fractionalIter(
 			size_t numIter)
 {
 	T mag = sqrt(zx * zx + zy * zy);
-	return numIter + 1 - log2(log2(mag));
+	return numIter + 1 - log2(log2((float)mag));
 }
 
 template<typename T>
