@@ -167,6 +167,8 @@ Success Supervising::process()
 			break;
 		}
 
+		configSet();
+
 		ok = mandelbrotStart();
 		if (!ok)
 			return procErrLog(-1, "could not start mandelbrot creation");
@@ -289,6 +291,41 @@ bool Supervising::basicsStart()
 	return true;
 }
 
+void Supervising::configSet()
+{
+	// Image
+	mCfg.imgWidth = env.imgWidth;
+	mCfg.imgHeight = env.imgHeight;
+	mCfg.szData = 0;
+	mCfg.szLine = 0;
+	mCfg.szPadding = 0;
+
+	// Mandelbrot
+	mCfg.forceDouble = env.forceDouble;
+	mCfg.useDouble = env.zoom > cZoomFloatMax || env.forceDouble;
+#if APP_HAS_AVX2
+	mCfg.disableSimd = env.disableSimd;
+#endif
+	mCfg.numIterMax = env.numIterMax;
+	mCfg.posX = env.posX;
+	mCfg.posY = env.posY;
+	mCfg.zoom = env.zoom;
+
+	mCfg.w2 = 0;
+	mCfg.h2 = 0;
+	mCfg.scaleX = 0;
+	mCfg.scaleY = 0;
+
+	// Filling
+	GradientStop *pStartGrad;
+	size_t numElemGrad;
+
+	gradientsGet(pStartGrad, numElemGrad);
+
+	mCfg.numBurst = env.numBurst;
+	mCfg.numGradients = numElemGrad;
+}
+
 bool Supervising::mandelbrotStart()
 {
 	libMandelInit();
@@ -305,37 +342,19 @@ bool Supervising::mandelbrotStart()
 	mpMbCreate->mTypeDriver = env.typeDriver;
 	mpMbCreate->mNumThreadsPool = env.numThreadsPool;
 	mpMbCreate->mNumFillers = env.numFillers;
+	mpMbCreate->mDisableGpu = env.disableGpu;
 
-	ConfigMandelbrot *pMandel = &mpMbCreate->cfg;
+	mpMbCreate->mCfg = mCfg;
 
-	// Image
-	pMandel->imgWidth = env.imgWidth;
-	pMandel->imgHeight = env.imgHeight;
-
-	// Mandelbrot
-	pMandel->forceDouble = env.forceDouble;
-	pMandel->useDouble = env.zoom > cZoomFloatMax || env.forceDouble;
-#if APP_HAS_AVX2
-	pMandel->disableSimd = env.disableSimd;
-#endif
+	configPrint(&mpMbCreate->mCfg);
 #if APP_HAS_VULKAN
-	pMandel->disableGpu = env.disableGpu;
+	userInfLog("  GPU                      %14s", env.disableGpu ? "Disabled" : "Enabled");
 #endif
-	pMandel->numIterMax = env.numIterMax;
-	pMandel->posX = env.posX;
-	pMandel->posY = env.posY;
-	pMandel->zoom = env.zoom;
-
-	// Filling
-	GradientStop *pStartGrad;
-	size_t numElemGrad;
-
-	gradientsGet(pStartGrad, numElemGrad);
-
-	pMandel->numBurst = env.numBurst;
-	pMandel->numGradients = numElemGrad;
-
-	configPrint(pMandel);
+	userInfLog("  Driver type              %14s", env.typeDriver.c_str());
+	userInfLog("  Num. pool-threads        %14u", env.numThreadsPool);
+	userInfLog("  Num. fillers             %14u", env.numFillers);
+	userInfLog("  Num. burst               %14u", env.numBurst);
+	userInfLog("");
 
 	start(mpMbCreate);
 
@@ -448,34 +467,6 @@ bool Supervising::compilerStart()
 }
 #endif
 
-void Supervising::configPrint(ConfigMandelbrot *pCfg)
-{
-	userInfLog("");
-	userInfLog("  Image width              %14u [pixel]", pCfg->imgWidth);
-	userInfLog("  Image height             %14u [pixel]", pCfg->imgHeight);
-	userInfLog("");
-
-	userInfLog("  Max. iter. per pix.      %14u", pCfg->numIterMax);
-	userInfLog("  Pos X                    %32.17f", pCfg->posX);
-	userInfLog("  Pos Y                    %32.17f", pCfg->posY);
-	userInfLog("  Zoom                     %14.3e", pCfg->zoom);
-	userInfLog("  Datatype                 %14s%s",
-					pCfg->useDouble ? "double" : "float",
-					pCfg->forceDouble ? " (forced)" : "");
-	userInfLog("");
-	userInfLog("  Driver type              %14s", env.typeDriver.c_str());
-	userInfLog("  Num. Pool-threads        %14u", env.numThreadsPool);
-	userInfLog("  Num. fillers             %14u", env.numFillers);
-	userInfLog("  Num. burst               %14u", env.numBurst);
-#if APP_HAS_AVX2
-	userInfLog("  SIMD                     %14s", pCfg->disableSimd ? "Disabled" : "Enabled");
-#endif
-#if APP_HAS_VULKAN
-	userInfLog("  GPU                      %14s", pCfg->disableGpu ? "Disabled" : "Enabled");
-#endif
-	userInfLog("");
-}
-
 void Supervising::progressPrint()
 {
 	size_t idxLineDone = mpMbCreate->mIdxLineDone;
@@ -494,7 +485,7 @@ void Supervising::progressPrint()
 	dInfo("\r  ");
 	pBuf += progressStr(pBuf, pBufEnd,
 			(int)idxLineDone,
-			(int)mpMbCreate->cfg.imgHeight);
+			(int)mpMbCreate->mCfg.imgHeight);
 
 	fprintf(stdout, "%s\r", pBufStart);
 	fflush(stdout);
@@ -504,7 +495,7 @@ void Supervising::resultPrint()
 {
 	double ips, numIter = (double)mpMbCreate->mNumIterations;
 	double durMs = (double)mpMbCreate->mDurationMs;
-	const ConfigMandelbrot *pCfg = &mpMbCreate->cfg;
+	const ConfigMandelbrot *pCfg = &mpMbCreate->mCfg;
 
 	userInfLog("\n");
 	userInfLog("  Duration                 %14zu [ms]", (size_t)durMs);

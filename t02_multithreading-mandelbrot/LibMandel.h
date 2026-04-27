@@ -83,7 +83,6 @@ struct ConfigMandelbrot
 	uint32_t forceDouble;
 	uint32_t useDouble;
 	uint32_t disableSimd;
-	uint32_t disableGpu;
 	uint32_t numIterMax;
 	MbValFull posX;
 	MbValFull posY;
@@ -100,6 +99,7 @@ struct ConfigMandelbrot
 };
 
 void libMandelInit();
+void configPrint(ConfigMandelbrot *pCfg);
 size_t colorMandelbrotScalar(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel);
 #if APP_HAS_AVX2
 size_t colorMandelbrotSimd(const ConfigMandelbrot *pCfg, char *pData, size_t idxLine, size_t idxPixel);
