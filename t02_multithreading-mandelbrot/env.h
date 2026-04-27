@@ -44,7 +44,7 @@ struct Environment
 	bool disableGpu;
 	bool disableCacheShader;
 #endif
-	uint16_t port;
+	uint16_t portTelnet;
 
 	uint32_t imgWidth;
 	uint32_t imgHeight;
