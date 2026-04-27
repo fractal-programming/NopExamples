@@ -30,7 +30,6 @@ struct ConfigMandelbrot
 	uint useDouble;
 	uint disableSimd;
 	uint numIterMax;
-	uint offsetGradient;
 	double posX;
 	double posY;
 	double zoom;

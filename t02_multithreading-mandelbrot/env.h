@@ -54,7 +54,6 @@ struct Environment
 
 	std::string typeDriver;
 	uint32_t numIterMax;
-	uint32_t offsetGradient;
 	uint32_t numThreadsPool;
 	uint32_t numFillers;
 	uint32_t numBurst;
