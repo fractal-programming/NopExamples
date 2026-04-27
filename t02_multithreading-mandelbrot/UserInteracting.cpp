@@ -320,7 +320,7 @@ bool UserInteracting::nameFileGenerate()
 	}
 
 	mNameFile = "/tmp/remote_";
-#if 0
+#if 1
 	mNameFile += to_string(portRemote);
 #else
 	mNameFile += "1";
