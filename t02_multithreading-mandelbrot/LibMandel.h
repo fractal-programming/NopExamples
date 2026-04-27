@@ -84,7 +84,6 @@ struct ConfigMandelbrot
 	uint32_t useDouble;
 	uint32_t disableSimd;
 	uint32_t numIterMax;
-	uint32_t offsetGradient;
 	MbValFull posX;
 	MbValFull posY;
 	MbValFull zoom;

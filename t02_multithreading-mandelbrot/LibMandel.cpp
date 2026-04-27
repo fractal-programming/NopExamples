@@ -698,7 +698,6 @@ void configPrint(ConfigMandelbrot *pCfg)
 	userInfLog("  Pos Y                    %32.17f", pCfg->posY);
 	userInfLog("  Zoom                     %14.3e", pCfg->zoom);
 	userInfLog("  Max. iter. per pix.      %14u", pCfg->numIterMax);
-	userInfLog("  Gradient offset          %14u", pCfg->offsetGradient);
 	userInfLog("");
 #if APP_HAS_AVX2
 	userInfLog("  SIMD                     %14s", pCfg->disableSimd ? "Disabled" : "Enabled");
