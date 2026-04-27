@@ -46,6 +46,7 @@ UserInteracting::UserInteracting()
 	//, mStartMs(0)
 	, mFd(INVALID_SOCKET)
 	, mpFilt(NULL)
+	, mpMbCreate(NULL)
 	, mInSettings(false)
 {
 	mState = StStart;
