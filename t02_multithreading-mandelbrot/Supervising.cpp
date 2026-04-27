@@ -158,16 +158,14 @@ Success Supervising::process()
 		break;
 	case StServiceStart:
 
-		if (env.port)
-		{
-			userInfLog("");
-			userInfLog("  Listening on TCP port %u (telnet)", env.port);
+		configSet();
+		libMandelInit();
 
+		if (env.portTelnet)
+		{
 			mState = StServerStart;
 			break;
 		}
-
-		configSet();
 
 		ok = mandelbrotStart();
 		if (!ok)
@@ -302,7 +300,6 @@ void Supervising::configSet()
 
 	// Mandelbrot
 	mCfg.forceDouble = env.forceDouble;
-	mCfg.useDouble = env.zoom > cZoomFloatMax || env.forceDouble;
 #if APP_HAS_AVX2
 	mCfg.disableSimd = env.disableSimd;
 #endif
@@ -310,6 +307,7 @@ void Supervising::configSet()
 	mCfg.posX = env.posX;
 	mCfg.posY = env.posY;
 	mCfg.zoom = env.zoom;
+	mCfg.useDouble = mCfg.zoom > cZoomFloatMax || env.forceDouble;
 
 	mCfg.w2 = 0;
 	mCfg.h2 = 0;
@@ -324,12 +322,21 @@ void Supervising::configSet()
 
 	mCfg.numBurst = env.numBurst;
 	mCfg.numGradients = numElemGrad;
+
+	// Print
+	configPrint(&mCfg);
+#if APP_HAS_VULKAN
+	userInfLog("  GPU                      %14s", env.disableGpu ? "Disabled" : "Enabled");
+#endif
+	userInfLog("  Driver type              %14s", env.typeDriver.c_str());
+	userInfLog("  Num. pool-threads        %14u", env.numThreadsPool);
+	userInfLog("  Num. fillers             %14u", env.numFillers);
+	userInfLog("  Num. burst               %14u", env.numBurst);
+	userInfLog("");
 }
 
 bool Supervising::mandelbrotStart()
 {
-	libMandelInit();
-
 	mpMbCreate = MandelbrotCreating::create();
 	if (!mpMbCreate)
 	{
@@ -346,17 +353,10 @@ bool Supervising::mandelbrotStart()
 
 	mpMbCreate->mCfg = mCfg;
 
-	configPrint(&mpMbCreate->mCfg);
-#if APP_HAS_VULKAN
-	userInfLog("  GPU                      %14s", env.disableGpu ? "Disabled" : "Enabled");
-#endif
-	userInfLog("  Driver type              %14s", env.typeDriver.c_str());
-	userInfLog("  Num. pool-threads        %14u", env.numThreadsPool);
-	userInfLog("  Num. fillers             %14u", env.numFillers);
-	userInfLog("  Num. burst               %14u", env.numBurst);
-	userInfLog("");
-
 	start(mpMbCreate);
+
+	userInfLog("  ---------------------------------------");
+	userInfLog("");
 
 	return true;
 }
@@ -370,9 +370,13 @@ bool Supervising::serverStart()
 		return false;
 	}
 
-	mpListen->portSet(env.port);
+	mpListen->portSet(env.portTelnet);
 
 	start(mpListen);
+
+	userInfLog("  ---------------------------------------");
+	userInfLog("");
+	userInfLog("  Listening on TCP port %u (telnet)", env.portTelnet);
 
 	return true;
 }

@@ -182,8 +182,8 @@ int main(int argc, char *argv[])
 	SwitchArg argDisableCacheShader("", "no-shader-cache", "Disable caching of shader files", false);
 	cmd.add(argDisableCacheShader);
 #endif
-	ValueArg<uint16_t> argPort("", "port-telnet", "Start in server mode if not zero. Default: 0", false, 0, "uint");
-	cmd.add(argPort);
+	ValueArg<uint16_t> argPortTelnet("", "port-telnet", "Start in server mode if not zero. Default: 0", false, 0, "uint");
+	cmd.add(argPortTelnet);
 	ValueArg<uint32_t> argImgWidth("", "img-width", "Width of generated image. Default: " cImgWidthDefault,
 								false, atoi(cImgWidthDefault), "uint");
 	cmd.add(argImgWidth);
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 	env.disableGpu = argDisableGpu.getValue();
 	env.disableCacheShader = argDisableCacheShader.getValue();
 #endif
-	env.port = argPort.getValue();
+	env.portTelnet = argPortTelnet.getValue();
 
 	env.imgWidth = argImgWidth.getValue();
 	env.imgHeight = argImgHeight.getValue();

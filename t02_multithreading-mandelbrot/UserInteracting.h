@@ -65,11 +65,14 @@ private:
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	void msgMain();
+	bool mandelbrotStart();
+	bool nameFileGenerate();
 
 	/* member variables */
-	//uint32_t mStartMs;
+	uint32_t mStartMs;
 	TelnetFiltering *mpFilt;
 	MandelbrotCreating *mpMbCreate;
+	std::string mNameFile;
 	bool mInSettings;
 
 	/* static functions */

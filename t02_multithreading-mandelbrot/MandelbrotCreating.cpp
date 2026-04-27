@@ -207,6 +207,8 @@ Success MandelbrotCreating::process()
 		// Repel
 		repel(mpCompute);
 
+		mIdxLineDone = mCfg.imgHeight;
+
 		mDurationMs = diffMs;
 
 		return Positive;
