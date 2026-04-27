@@ -48,11 +48,12 @@ public:
 
 	// Input
 	std::string mNameFile;
-	ConfigMandelbrot cfg;
+	ConfigMandelbrot mCfg;
 
 	std::string mTypeDriver;
 	uint32_t mNumThreadsPool;
 	uint32_t mNumFillers;
+	bool mDisableGpu;
 
 	// Output
 

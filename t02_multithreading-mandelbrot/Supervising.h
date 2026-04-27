@@ -64,6 +64,7 @@ private:
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	bool basicsStart();
+	void configSet();
 	bool mandelbrotStart();
 	bool serverStart();
 	void peerAdd();
@@ -71,13 +72,13 @@ private:
 	bool mustCompileShader();
 	bool compilerStart();
 #endif
-	void configPrint(ConfigMandelbrot *pMandel);
 	void progressPrint();
 	void resultPrint();
 
 	/* member variables */
 	//uint32_t mStartMs;
 	uint32_t mStateSd;
+	ConfigMandelbrot mCfg;
 	MandelbrotCreating *mpMbCreate;
 	TcpListening *mpListen;
 	uint32_t mIdxLineDone;

@@ -29,7 +29,6 @@ struct ConfigMandelbrot
 	uint forceDouble;
 	uint useDouble;
 	uint disableSimd;
-	uint disableGpu;
 	uint numIterMax;
 	double posX;
 	double posY;

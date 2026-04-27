@@ -687,6 +687,27 @@ void libMandelInit()
 	gradient[cNumGradients - 1] = keysGradient[cNumKeysGradient - 1];
 }
 
+void configPrint(ConfigMandelbrot *pCfg)
+{
+	userInfLog("");
+	userInfLog("  Image width              %14u [pixel]", pCfg->imgWidth);
+	userInfLog("  Image height             %14u [pixel]", pCfg->imgHeight);
+	userInfLog("");
+
+	userInfLog("  Pos X                    %32.17f", pCfg->posX);
+	userInfLog("  Pos Y                    %32.17f", pCfg->posY);
+	userInfLog("  Zoom                     %14.3e", pCfg->zoom);
+	userInfLog("  Max. iter. per pix.      %14u", pCfg->numIterMax);
+	userInfLog("");
+#if APP_HAS_AVX2
+	userInfLog("  SIMD                     %14s", pCfg->disableSimd ? "Disabled" : "Enabled");
+#endif
+	userInfLog("  Datatype                 %14s%s",
+					pCfg->useDouble ? "double" : "float",
+					pCfg->forceDouble ? " (forced)" : "");
+	userInfLog("");
+}
+
 void gradientsGet(GradientStop * &pStart, size_t &numElements)
 {
 	pStart = gradient;

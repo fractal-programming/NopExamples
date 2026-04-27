@@ -59,6 +59,7 @@ MandelbrotCreating::MandelbrotCreating()
 	, mTypeDriver("")
 	, mNumThreadsPool(0)
 	, mNumFillers(0)
+	, mDisableGpu(false)
 	, mIdxLineDone(0)
 	, mNumIterations(0)
 	, mDurationMs(0)
@@ -75,17 +76,17 @@ MandelbrotCreating::MandelbrotCreating()
 #endif
 {
 	// Image
-	cfg.imgWidth = 1920;
-	cfg.imgHeight = 1200;
+	mCfg.imgWidth = 1920;
+	mCfg.imgHeight = 1200;
 
 	// Mandelbrot
-	cfg.numIterMax = 2000;
-	cfg.posX = -0.743643887037151;
-	cfg.posY = 0.131825904205330;
-	cfg.zoom = 170000;
+	mCfg.numIterMax = 2000;
+	mCfg.posX = -0.743643887037151;
+	mCfg.posY = 0.131825904205330;
+	mCfg.zoom = 170000;
 
 	// Filling
-	cfg.numBurst = 300;
+	mCfg.numBurst = 300;
 
 	mState = StStart;
 }
@@ -118,17 +119,17 @@ Success MandelbrotCreating::process()
 		if (success != Positive)
 			return procErrLog(-1, "invalid arguments");
 
-		cfg.w2 = ((MbValFull)cfg.imgWidth) / 2;
-		cfg.h2 = ((MbValFull)cfg.imgHeight) / 2;
-		cfg.scaleX = 1.0 / cfg.zoom;
-		cfg.scaleY = (cfg.scaleX * cfg.imgHeight) / (cfg.imgWidth * cfg.h2);
-		cfg.scaleX /= cfg.w2;
+		mCfg.w2 = ((MbValFull)mCfg.imgWidth) / 2;
+		mCfg.h2 = ((MbValFull)mCfg.imgHeight) / 2;
+		mCfg.scaleX = 1.0 / mCfg.zoom;
+		mCfg.scaleY = (mCfg.scaleX * mCfg.imgHeight) / (mCfg.imgWidth * mCfg.h2);
+		mCfg.scaleX /= mCfg.w2;
 
-		cfg.szData = cfg.imgWidth * cNumBytesPerPixel;
-		cfg.szLine = ((cfg.szData + maskLine) & ~maskLine);
-		cfg.szPadding = cfg.szLine - cfg.szData;
+		mCfg.szData = mCfg.imgWidth * cNumBytesPerPixel;
+		mCfg.szLine = ((mCfg.szData + maskLine) & ~maskLine);
+		mCfg.szPadding = mCfg.szLine - mCfg.szData;
 
-		mSzBuffer = cfg.szLine * mNumFillers;
+		mSzBuffer = mCfg.szLine * mNumFillers;
 
 		mpBuffer = new dNoThrow char[mSzBuffer];
 		if (!mpBuffer)
@@ -136,24 +137,24 @@ Success MandelbrotCreating::process()
 
 		mpBufferEnd = mpBuffer + mSzBuffer;
 #if 0
-		procDbgLog("Data size        %u", cfg.szData);
-		procDbgLog("Line padding     %u", cfg.szPadding);
+		procDbgLog("Data size        %u", mCfg.szData);
+		procDbgLog("Line padding     %u", mCfg.szPadding);
 
-		procDbgLog("Line size        %u", cfg.szLine);
+		procDbgLog("Line size        %u", mCfg.szLine);
 		procDbgLog("Buffer size      %u", mSzBuffer);
 
 		procDbgLog("Buffer start     %p", mpBuffer);
 		procDbgLog("Buffer end       %p", mpBufferEnd);
 #endif
 		mNameFile += ".bmp";
-		ok = mBmp.writeOpen(mNameFile.c_str(), cfg.imgWidth, cfg.imgHeight);
+		ok = mBmp.writeOpen(mNameFile.c_str(), mCfg.imgWidth, mCfg.imgHeight);
 		if (!ok)
 			return procErrLog(-1, "could not create BMP file");
 
 		mStartMs = curTimeMs;
 
 #if APP_HAS_VULKAN
-		if (!cfg.disableGpu)
+		if (!mDisableGpu)
 		{
 			mState = StVulkanStart;
 			break;
@@ -230,23 +231,23 @@ Success MandelbrotCreating::vulkanStart()
 	if (!mpCompute)
 		return procErrLog(-1, "could not create process");
 
-	uint32_t numWorkgroupsX = (cfg.imgWidth  + 15) / 16;
-	uint32_t numWorkgroupsY = (cfg.imgHeight + 15) / 16;
+	uint32_t numWorkgroupsX = (mCfg.imgWidth  + 15) / 16;
+	uint32_t numWorkgroupsY = (mCfg.imgHeight + 15) / 16;
 
 	mpCompute->workgroupsSet(numWorkgroupsX, numWorkgroupsY);
 
 	mpCompute->shaderUse("mandel");
 
 	// Input
-	mpCompute->bufferInAdd(dIdBufferConfig, sizeof(cfg), &cfg);
+	mpCompute->bufferInAdd(dIdBufferConfig, sizeof(mCfg), &mCfg);
 	mpCompute->bufferInAdd(dIdBufferGradients, numElemGrad * sizeof(GradientStop), pStartGrad);
 
-	//hexDump(&cfg, sizeof(cfg), "Config");
+	//hexDump(&mCfg, sizeof(mCfg), "Config");
 
 	// Output
 	mpCompute->bufferOutAdd(dIdBufferDebug, 128);
-	mpCompute->bufferOutAdd(dIdBufferResults, cfg.szLine * cfg.imgHeight);
-	mpCompute->bufferOutAdd(dIdBufferStats, sizeof(uint32_t) * cfg.imgHeight);
+	mpCompute->bufferOutAdd(dIdBufferResults, mCfg.szLine * mCfg.imgHeight);
+	mpCompute->bufferOutAdd(dIdBufferStats, sizeof(uint32_t) * mCfg.imgHeight);
 
 	start(mpCompute);
 
@@ -285,9 +286,9 @@ Success MandelbrotCreating::resultVulkanWrite()
 	mNumIterations = 0;
 
 	i = 0;
-	for (; i < cfg.imgHeight; ++i, pResult += cfg.szLine, ++pNumIter)
+	for (; i < mCfg.imgHeight; ++i, pResult += mCfg.szLine, ++pNumIter)
 	{
-		ok = mBmp.lineWrite(pResult, cfg.szLine);
+		ok = mBmp.lineWrite(pResult, mCfg.szLine);
 		if (!ok)
 			return procErrLog(-1, "could not write line");
 
@@ -337,7 +338,7 @@ Success MandelbrotCreating::fillersProcess()
 
 		mNumIterations += pFill->mNumIter;
 
-		ok = mBmp.lineWrite(pFill->mpLine, cfg.szLine);
+		ok = mBmp.lineWrite(pFill->mpLine, mCfg.szLine);
 		if (!ok)
 			return procErrLog(-1, "could not write line");
 
@@ -349,7 +350,7 @@ Success MandelbrotCreating::fillersProcess()
 
 	// Start new filler
 
-	while (mLstFillers.size() < mNumFillers && mIdxLineFiller < cfg.imgHeight)
+	while (mLstFillers.size() < mNumFillers && mIdxLineFiller < mCfg.imgHeight)
 	{
 #if 1
 		if (useExt && ThreadPooling::queueReqFull())
@@ -359,7 +360,7 @@ Success MandelbrotCreating::fillersProcess()
 		if (!pFill)
 			return procErrLog(-1, "could not create process");
 
-		pFill->mpCfg = &cfg;
+		pFill->mpCfg = &mCfg;
 
 		pFill->mIdxLine = mIdxLineFiller;
 		pFill->mpLine = mpLineFiller;
@@ -388,14 +389,14 @@ Success MandelbrotCreating::fillersProcess()
 		// Next line
 		++mIdxLineFiller;
 
-		mpLineFiller += cfg.szLine;
+		mpLineFiller += mCfg.szLine;
 		if (mpLineFiller >= mpBufferEnd)
 			mpLineFiller = mpBuffer;
 	}
 
 	// Check overall finished
 
-	if (mIdxLineDone < cfg.imgHeight)
+	if (mIdxLineDone < mCfg.imgHeight)
 		return Pending;
 
 	return Positive;
@@ -403,16 +404,16 @@ Success MandelbrotCreating::fillersProcess()
 
 Success MandelbrotCreating::argumentsCheck()
 {
-	if (!cfg.imgWidth || !cfg.imgHeight)
+	if (!mCfg.imgWidth || !mCfg.imgHeight)
 		return procErrLog(-1, "bad image format");
 
-	if (cfg.numIterMax > 200000)
+	if (mCfg.numIterMax > 200000)
 		return procErrLog(-1, "max. iterations too high");
 
-	if (!mNumFillers || mNumFillers > cfg.imgHeight)
+	if (!mNumFillers || mNumFillers > mCfg.imgHeight)
 	{
 		procDbgLog("setting number of fillers to number of lines");
-		mNumFillers = cfg.imgHeight;
+		mNumFillers = mCfg.imgHeight;
 	}
 
 	return Positive;
@@ -423,10 +424,10 @@ void MandelbrotCreating::processInfo(char *pBuf, char *pBufEnd)
 #if 0
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
 #endif
-	pBuf += progressStr(pBuf, pBufEnd, (int)mIdxLineFiller, (int)cfg.imgHeight);
+	pBuf += progressStr(pBuf, pBufEnd, (int)mIdxLineFiller, (int)mCfg.imgHeight);
 	dInfo("\n");
 
-	pBuf += progressStr(pBuf, pBufEnd, (int)mIdxLineDone, (int)cfg.imgHeight);
+	pBuf += progressStr(pBuf, pBufEnd, (int)mIdxLineDone, (int)mCfg.imgHeight);
 	dInfo("\n");
 
 	(void)pBuf;
