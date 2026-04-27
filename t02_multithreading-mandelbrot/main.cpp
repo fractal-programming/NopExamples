@@ -72,6 +72,7 @@ class AppHelpOutput : public TclapOutput {};
 #define cZoomDefault			"170000"
 #define cTypeDriverDefault		"ext"
 #define cNumIterMaxDefault		"2000"
+#define cOffsetGradientDefault	"0"
 #define cNumThreadsPoolDefault	"20"
 #define cNumFillersDefault		cImgHeightDefault
 #define cNumBurstDefault			"300"
@@ -209,6 +210,9 @@ int main(int argc, char *argv[])
 	ValueArg<uint32_t> argNumIterMax("", "iter-max", "Maximum number of Mandelbrot iterations per pixel. Default: " cNumIterMaxDefault,
 								false, atoi(cNumIterMaxDefault), "uint");
 	cmd.add(argNumIterMax);
+	ValueArg<uint32_t> argOffsetGradient("", "offs-gradient", "Offset of color gradient. Default: " cOffsetGradientDefault,
+								false, atoi(cOffsetGradientDefault), "uint");
+	cmd.add(argOffsetGradient);
 	ValueArg<uint32_t> argThreadsPool("", "num-threads-pool", "Number of threads used by the thread-pool. Default: " cNumThreadsPoolDefault,
 								false, atoi(cNumThreadsPoolDefault), "uint");
 	cmd.add(argThreadsPool);
@@ -259,6 +263,7 @@ int main(int argc, char *argv[])
 
 	env.typeDriver = argTypeDriver.getValue();
 	env.numIterMax = argNumIterMax.getValue();
+	env.offsetGradient = argOffsetGradient.getValue();
 	env.numThreadsPool = argThreadsPool.getValue();
 	env.numFillers = argNumFillers.getValue();
 	env.numBurst = argNumBurst.getValue();

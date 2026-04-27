@@ -304,6 +304,7 @@ void Supervising::configSet()
 	mCfg.disableSimd = env.disableSimd;
 #endif
 	mCfg.numIterMax = env.numIterMax;
+	mCfg.offsetGradient = env.offsetGradient;
 	mCfg.posX = env.posX;
 	mCfg.posY = env.posY;
 	mCfg.zoom = env.zoom;
