@@ -470,6 +470,9 @@ void Supervising::configPrint(ConfigMandelbrot *pCfg)
 #if APP_HAS_AVX2
 	userInfLog("  SIMD                     %14s", pCfg->disableSimd ? "Disabled" : "Enabled");
 #endif
+#if APP_HAS_VULKAN
+	userInfLog("  GPU                      %14s", pCfg->disableGpu ? "Disabled" : "Enabled");
+#endif
 	userInfLog("");
 }
 
