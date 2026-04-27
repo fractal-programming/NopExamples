@@ -28,6 +28,7 @@
 
 #include "Processing.h"
 #include "TelnetFiltering.h"
+#include "MandelbrotCreating.h"
 
 class UserInteracting : public Processing
 {
@@ -39,7 +40,10 @@ public:
 		return new dNoThrow UserInteracting;
 	}
 
+	// Input
+
 	SOCKET mFd;
+	ConfigMandelbrot mCfg;
 
 protected:
 
@@ -65,6 +69,7 @@ private:
 	/* member variables */
 	//uint32_t mStartMs;
 	TelnetFiltering *mpFilt;
+	MandelbrotCreating *mpMbCreate;
 	bool mInSettings;
 
 	/* static functions */

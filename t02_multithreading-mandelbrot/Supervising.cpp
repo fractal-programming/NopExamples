@@ -396,6 +396,7 @@ void Supervising::peerAdd()
 		}
 
 		pUser->mFd = fdPeer;
+		pUser->mCfg = mCfg;
 
 		start(pUser);
 		whenFinishedRepel(pUser);
