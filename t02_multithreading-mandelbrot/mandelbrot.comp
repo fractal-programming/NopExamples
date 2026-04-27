@@ -320,6 +320,11 @@ void main()
 {
 	uvec2 posPixel = gl_GlobalInvocationID.xy;
 
+	if (posPixel.x == 0)
+		stats[posPixel.y] = 0u;
+
+	barrier();
+
 	if (posPixel.x >= cfg.imgWidth)
 		return;
 
@@ -332,5 +337,7 @@ void main()
 		colorMandelbrot(posPixel, numIter);
 	else
 		colorMandelbrotDouble(posPixel, numIter);
+
+	atomicAdd(stats[posPixel.y], numIter);
 }
 
