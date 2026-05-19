@@ -278,8 +278,9 @@ bool UserInteracting::mandelbrotStart()
 	mpMbCreate->mTypeDriver = env.typeDriver;
 	mpMbCreate->mNumThreadsPool = env.numThreadsPool;
 	mpMbCreate->mNumFillers = env.numFillers;
+#if APP_HAS_VULKAN
 	mpMbCreate->mDisableGpu = env.disableGpu;
-
+#endif
 	mpMbCreate->mCfg = mCfg;
 
 	start(mpMbCreate);
